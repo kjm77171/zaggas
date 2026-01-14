@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>2026 FIFA World Cup Draw Simulator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    .draw-button {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .draw-button:hover { transform: scale(1.1); }
+    .draw-button:active { transform: scale(0.95); }
+
+    #drawBall {
+      background: radial-gradient(circle at 30% 30%, #fff, #c00);
+      animation: pulse 2s infinite;
+    }
+    #restartBall {
+      background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b);
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(200,0,0,0.4); }
+      70% { box-shadow: 0 0 0 35px rgba(200,0,0,0); }
+      100% { box-shadow: 0 0 0 0 rgba(200,0,0,0); }
+    }
+
+    .ball-content {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 4px solid white;
+    }
+    .ball-content img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+    .ball-content .emoji {
+      font-size: 80px;
+    }
+
+    .team-card { position: relative; transition: all 0.3s ease; }
+    .moving {
+      position: fixed !important;
+      z-index: 100;
+      transform: scale(1.4);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+      pointer-events: none;
+      border-radius: 10px;
+    }
+    .pot-flag { width: 32px; height: 24px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; }
+    .group-flag { width: 38px; height: 28px; object-fit: cover; border-radius: 4px; border: 1px solid #bbb; }
+
+    .drawn-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 py-6">
+  <div class="max-w-7xl mx-auto px-4">
+    <h1 class="text-4xl font-bold text-center text-gray-800 dark:text-white mb-4">
+      2026 FIFA World Cup Draw Simulator ⚽
+    </h1>
+    <p class="text-center text-xl text-gray-600 dark:text-gray-400 mb-10">
+      Click the red ball to draw the next team!
+    </p>
+
+    <div class="flex justify-center items-center gap-16 mb-12">
+      <div id="drawBall" class="draw-button">
+        <div id="ballContent" class="ball-content">
+          <span class="emoji">⚽</span>
+        </div>
+      </div>
+      <div id="restartBall" class="draw-button" title="Restart Draw">
+        <div class="ball-content">
+          <!-- 안정적인 2026 월드컵 엠블럼 이미지 (PNG, CORS 문제 없음) -->
+          <img src="https://upload.wikimedia.org/wikipedia/en/1/1f/2026_FIFA_World_Cup_emblem.png" alt="2026 World Cup Trophy">
+        </div>
+      </div>
+    </div>
+
+    <p id="status" class="text-center text-2xl font-bold text-indigo-700 dark:text-indigo-400 mb-8">
+      Ready! Click the red ball to start!
+    </p>
+
+    <div class="flex flex-col lg:flex-row gap-6">
+      <div class="lg:w-1/3 space-y-4" id="pots"></div>
+      <div class="lg:w-2/3">
+        <div id="groups" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 스크립트는 이전 완벽 버전 그대로 (동작 확인됨) -->
+  <script>
+    const groupsLetters = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+    const confedMax = { 'UEFA': 2, 'default': 1 };
+
+    const flagBase = 'https://cdn.jsdelivr.net/gh/lipis/flag-icons@latest/flags/4x3/';
+    const getFlagUrl = (code) => code ? `${flagBase}${code}.svg` : '';
+
+    const potsData = [
+      [{name: "Spain", code: "es", confed: "UEFA"}, {name: "Argentina", code: "ar", confed: "CONMEBOL"}, {name: "France", code: "fr", confed: "UEFA"},
+       {name: "England", code: "gb", confed: "UEFA"}, {name: "Brazil", code: "br", confed: "CONMEBOL"}, {name: "Portugal", code: "pt", confed: "UEFA"},
+       {name: "Netherlands", code: "nl", confed: "UEFA"}, {name: "Belgium", code: "be", confed: "UEFA"}, {name: "Germany", code: "de", confed: "UEFA"}],
+      [{name: "Croatia", code: "hr", confed: "UEFA"}, {name: "Morocco", code: "ma", confed: "CAF"}, {name: "Colombia", code: "co", confed: "CONMEBOL"},
+       {name: "Uruguay", code: "uy", confed: "CONMEBOL"}, {name: "Switzerland", code: "ch", confed: "UEFA"}, {name: "Japan", code: "jp", confed: "AFC"},
+       {name: "Senegal", code: "sn", confed: "CAF"}, {name: "Iran", code: "ir", confed: "AFC"}, {name: "South Korea", code: "kr", confed: "AFC"},
+       {name: "Ecuador", code: "ec", confed: "CONMEBOL"}, {name: "Austria", code: "at", confed: "UEFA"}, {name: "Australia", code: "au", confed: "AFC"}],
+      [{name: "Norway", code: "no", confed: "UEFA"}, {name: "Panama", code: "pa", confed: "CONCACAF"}, {name: "Egypt", code: "eg", confed: "CAF"},
+       {name: "Algeria", code: "dz", confed: "CAF"}, {name: "Scotland", code: "gb-sct", confed: "UEFA"}, {name: "Paraguay", code: "py", confed: "CONMEBOL"},
+       {name: "Tunisia", code: "tn", confed: "CAF"}, {name: "Côte d'Ivoire", code: "ci", confed: "CAF"}, {name: "Uzbekistan", code: "uz", confed: "AFC"},
+       {name: "Qatar", code: "qa", confed: "AFC"}, {name: "Saudi Arabia", code: "sa", confed: "AFC"}, {name: "South Africa", code: "za", confed: "CAF"}],
+      [{name: "Jordan", code: "jo", confed: "AFC"}, {name: "Cape Verde", code: "cv", confed: "CAF"}, {name: "Ghana", code: "gh", confed: "CAF"},
+       {name: "Curaçao", code: "cw", confed: "CONCACAF"}, {name: "Haiti", code: "ht", confed: "CONCACAF"}, {name: "New Zealand", code: "nz", confed: "OFC"},
+       {name: "UEFA PO A", code: "", confed: "UEFA"}, {name: "UEFA PO B", code: "", confed: "UEFA"}, {name: "UEFA PO C", code: "", confed: "UEFA"},
+       {name: "UEFA PO D", code: "", confed: "UEFA"}, {name: "Inter PO 1", code: "", confed: "OTHER"}, {name: "Inter PO 2", code: "", confed: "OTHER"}]
+    ];
+
+    const hosts = { 
+      0: {name: "Mexico", code: "mx", confed: "CONCACAF"},
+      1: {name: "Canada", code: "ca", confed: "CONCACAF"},
+      3: {name: "United States", code: "us", confed: "CONCACAF"}
+    };
+
+    let groups = [];
+    let shuffledPots = [];
+    let currentPot = 0;
+    let currentTeamIndex = 0;
+    let potElements = [];
+
+    function shuffle(array) { return [...array].sort(() => Math.random() - 0.5); }
+
+    function createLayout() {
+      document.getElementById('pots').innerHTML = '';
+      potElements = [];
+
+      shuffledPots = potsData.map(pot => shuffle([...pot]));
+
+      shuffledPots.forEach((pot, i) => {
+        const potDiv = document.createElement('div');
+        potDiv.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-md p-3';
+        potDiv.innerHTML = `<h3 class="text-lg font-bold mb-2 text-indigo-700 dark:text-indigo-400">Pot ${i+1}</h3>
+                            <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3"></div>`;
+        document.getElementById('pots').appendChild(potDiv);
+        const grid = potDiv.lastElementChild;
+        potElements[i] = [];
+        pot.forEach(team => {
+          const card = document.createElement('div');
+          card.className = 'team-card bg-gray-50 dark:bg-gray-700 rounded-lg p-3 flex items-center justify-center relative';
+          card.innerHTML = team.code 
+            ? `<img src="${getFlagUrl(team.code)}" class="pot-flag" alt="${team.name}">`
+            : '<div class="w-8 h-6 bg-gray-400 rounded"></div>';
+          grid.appendChild(card);
+          potElements[i].push(card);
+        });
+      });
+
+      const groupsContainer = document.getElementById('groups');
+      groupsContainer.innerHTML = '';
+      groups = Array(12).fill().map(() => Array(4).fill(null));
+
+      groupsLetters.forEach((letter, i) => {
+        const card = document.createElement('div');
+        card.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-md p-3';
+        card.innerHTML = `
+          <h2 class="text-lg font-bold text-center mb-2 text-indigo-700 dark:text-indigo-400">Group ${letter}</h2>
+          <div class="space-y-2">
+            ${Array(4).fill('<div class="team-slot bg-gray-100 dark:bg-gray-700 rounded-lg p-2 min-h-14 flex flex-col items-center justify-center text-xs">?</div>').join('')}
+          </div>`;
+        groupsContainer.appendChild(card);
+      });
+
+      Object.entries(hosts).forEach(([gIdx, team]) => {
+        groups[gIdx][0] = team;
+        updateGroupSlot(parseInt(gIdx), 0, team);
+      });
+
+      currentPot = 0;
+      currentTeamIndex = 0;
+      document.getElementById('ballContent').innerHTML = '<span class="emoji">⚽</span>';
+      document.getElementById('status').textContent = 'Ready! Click the red ball to start!';
+      document.getElementById('drawBall').style.pointerEvents = 'auto';
+    }
+
+    function updateGroupSlot(groupIdx, pos, team) {
+      const slots = document.querySelectorAll('#groups .team-slot');
+      const index = groupIdx * 4 + pos;
+      const slot = slots[index];
+      slot.innerHTML = team.code
+        ? `<img src="${getFlagUrl(team.code)}" class="group-flag mb-1" alt="${team.name}">
+           <div class="font-bold text-xs">${team.name}</div>`
+        : `<div class="font-bold text-xs">${team.name}</div>`;
+      slot.classList.add('bg-gradient-to-br', 'from-indigo-100', 'to-purple-100', 'dark:from-indigo-900', 'dark:to-purple-900');
+    }
+
+    function getConfedCount(group, confed) {
+      return group.filter(t => t && t.confed === confed).length;
+    }
+
+    async function drawNext() {
+      document.getElementById('drawBall').style.pointerEvents = 'none';
+
+      if (currentPot >= shuffledPots.length) {
+        document.getElementById('status').textContent = "Draw Complete! 🎉";
+        return;
+      }
+
+      if (currentTeamIndex >= shuffledPots[currentPot].length) {
+        currentPot++;
+        currentTeamIndex = 0;
+        if (currentPot >= shuffledPots.length) return drawNext();
+        document.getElementById('status').textContent = `Starting Pot ${currentPot + 1}!`;
+      }
+
+      const team = shuffledPots[currentPot][currentTeamIndex];
+      const pos = currentPot;
+
+      const availableGroups = [];
+      for (let g = 0; g < 12; g++) {
+        if (groups[g][pos] === null) {
+          const count = getConfedCount(groups[g], team.confed);
+          const max = (team.confed === 'UEFA' || team.confed === 'OTHER') ? 2 : 1;
+          if (count < max) availableGroups.push(g);
+        }
+      }
+
+      if (availableGroups.length === 0) {
+        document.getElementById('status').textContent = "Cannot place team! Restart.";
+        document.getElementById('drawBall').style.pointerEvents = 'auto';
+        return;
+      }
+
+      const chosenGroup = availableGroups[Math.floor(Math.random() * availableGroups.length)];
+      groups[chosenGroup][pos] = team;
+
+      const ballContent = document.getElementById('ballContent');
+      ballContent.innerHTML = team.code 
+        ? `<img src="${getFlagUrl(team.code)}" alt="${team.name}">`
+        : '<span class="emoji">?</span>';
+
+      confetti({
+        particleCount: 200,
+        spread: 80,
+        origin: { y: 0.5 },
+        colors: ['#ff0000', '#ffffff', '#0000ff', '#ffff00', '#00ff00', '#ffaa00']
+      });
+
+      await new Promise(r => setTimeout(r, 2000));
+
+      const teamCard = potElements[currentPot][currentTeamIndex];
+      if (!teamCard.querySelector('.drawn-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'drawn-overlay';
+        overlay.innerHTML = '✓';
+        teamCard.appendChild(overlay);
+      }
+
+      const clone = teamCard.cloneNode(true);
+      clone.classList.add('moving');
+      document.body.appendChild(clone);
+
+      const startRect = teamCard.getBoundingClientRect();
+      const targetSlot = document.querySelectorAll('#groups .team-slot')[chosenGroup * 4 + pos];
+      const endRect = targetSlot.getBoundingClientRect();
+
+      targetSlot.innerHTML = '';
+      targetSlot.classList.remove('bg-gradient-to-br', 'from-indigo-100', 'to-purple-100');
+
+      clone.style.position = 'fixed';
+      clone.style.left = `${startRect.left + scrollX}px`;
+      clone.style.top = `${startRect.top + scrollY}px`;
+      clone.style.width = `${startRect.width}px`;
+      clone.style.height = `${startRect.height}px`;
+
+      await new Promise(r => requestAnimationFrame(() => r()));
+      clone.style.left = `${endRect.left + scrollX}px`;
+      clone.style.top = `${endRect.top + scrollY}px`;
+      clone.style.width = `${endRect.width}px`;
+      clone.style.height = `${endRect.height}px`;
+
+      await new Promise(r => setTimeout(r, 1000));
+      clone.remove();
+      updateGroupSlot(chosenGroup, pos, team);
+
+      ballContent.innerHTML = '<span class="emoji">⚽</span>';
+
+      currentTeamIndex++;
+      document.getElementById('status').textContent = `${team.name} → Group ${groupsLetters[chosenGroup]} (Pot ${currentPot + 1}) | Remaining: ${shuffledPots.flat().length - shuffledPots.slice(0,currentPot).flat().length - currentTeamIndex} teams`;
+
+      document.getElementById('drawBall').style.pointerEvents = 'auto';
+    }
+
+    document.getElementById('drawBall').addEventListener('click', drawNext);
+    document.getElementById('restartBall').addEventListener('click', createLayout);
+
+    createLayout();
+  </script>
+</body>
+</html>

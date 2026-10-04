@@ -1,7 +1,7 @@
 # ZAGGAS 작업 규칙
 
 ## 작업 영역
-- 유일한 프로젝트 루트: C:\Users\ubob_kjm\Desktop\JM\zaggas.
+- 유일한 작업 영역은 이 AGENTS.md가 위치한 ZAGGAS Repository 루트와 그 내부이다.
 - 프로젝트 외부 파일을 수정하지 않는다. 회사 프로젝트(TLS, Seedgen, mcp-admin 등)에 접근하거나 소스·설정을 참조·복사·수정하지 않는다.
 - 회사 Repository, Remote, Branch, Credential 및 Git 설정을 변경하지 않는다.
 - 시스템 전역 설치·PATH·PowerShell ExecutionPolicy 등 전역 설정을 임의 변경하지 않는다. 필요하면 이유와 영향도를 먼저 보고한다.
@@ -30,13 +30,13 @@
 ## Git
 - Git 변경 전 실제 Repository root와 Branch를 확인한다.
 - 전역 user.name/user.email을 변경하지 않는다. 개인 정보는 GitHub 연결 단계에 사용자에게 받아 ZAGGAS local config에만 설정한다.
-- 회사 전역 이메일 jmkim@ubob.com으로 ZAGGAS commit을 만들지 않는다. 개인 local config가 확정되기 전에는 commit하지 않는다.
+- 회사 전역 Git 사용자 정보로 ZAGGAS commit을 만들지 않는다. 개인 local config가 확정되기 전에는 commit하지 않는다.
 - Commit 전 변경 파일과 diff를 확인하고 의도하지 않은 파일이 있으면 중단한다.
 - .idea, node_modules, 빌드 결과물, 실제 환경변수 및 개발환경 전용 파일은 Git에서 제외한다.
 - GitHub Repository/remote/push 및 Supabase 연결은 별도 승인 없이 수행하지 않는다.
 
 ## 환경과 검증
-- Windows x64, Node.js v24.21.0, npm/npx 11.19.0. 일반 Node 경로는 C:\Program Files\nodejs\node.exe.
+- Windows x64, Node.js v24.21.0, npm/npx 11.19.0. Codex 내장 런타임 대신 일반 설치 Node.js를 사용한다.
 - PowerShell ExecutionPolicy를 변경하지 않고 필요하면 npm.cmd / npx.cmd를 사용한다.
 - 완료 보고에 실제 경로, 변경 파일, 구현 기능, dev 실행, lint, production build, 테스트, 화면 확인 방법, Git 상태, DB 변경, 외부 영향, 남은 문제, 다음 작업 후보를 포함한다.
 - 다음 단계 후보는 제안만 하고 임의 진행하지 않는다.

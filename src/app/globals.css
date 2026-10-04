@@ -1,0 +1,5 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #fafafa; color: #222; font-family: Arial, sans-serif; }
+main { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center; }
+h1 { margin: 0 0 24px; font-size: 40px; }
+p { margin: 6px 0; line-height: 1.6; }

@@ -1,6 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-export type Project = { id: string; title: string; seed_sentence: string | null; initial_interest_codes: string[] | null; creation_type: string | null; created_at: string; updated_at: string };
+export type Project = { id: string; title: string | null; seed_sentence: string | null; initial_interest_codes: string[] | null; creation_type: string | null; created_at: string; updated_at: string };
 const columns = "id,title,seed_sentence,initial_interest_codes,creation_type,created_at,updated_at";
 export async function getProjects(supabase: SupabaseClient, userId: string): Promise<Project[]> {
   const projects: Project[] = [];

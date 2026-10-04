@@ -13,3 +13,12 @@
 .note { color: #77736a; font-size: 12px; }
 .recovery { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; }
 @media (max-width: 600px) { .workspace { padding: 20px 24px 56px; } .editorForm textarea { padding: 14px; min-height: 50svh; font-size: 16px; } }
+
+.titleArea { margin: 32px 0 24px; }
+.titleArea h1 { margin: 8px 0 12px; overflow-wrap: anywhere; }
+.titleArea button { font-size: 13px; color: #66635c; }
+.titleForm { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.titleForm label { font-size: 14px; color: #66635c; }
+.titleForm input { width: 100%; min-width: 0; padding: 12px; font: inherit; background: #fffdf8; border: 1px solid #d4cfc2; border-radius: 2px; }
+.titlePanel { margin-top: 36px; padding-top: 24px; border-top: 1px solid #ddd8cd; }
+.titlePanel h2 { font-size: 20px; font-weight: 500; line-height: 1.6; }

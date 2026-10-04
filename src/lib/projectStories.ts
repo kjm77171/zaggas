@@ -1,6 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isUuid, type ManuscriptData, type ManuscriptLoad, type SaveResult } from "@/app/projects/[id]/workspaceTypes";
+import { isUuid, isTimestamp, validateTitle, type ManuscriptData, type ManuscriptLoad, type SaveResult } from "@/app/projects/[id]/workspaceTypes";
 const columns = "id,project_id,content,created_at,updated_at";
 function parseManuscript(value: unknown, projectId: string, storyId?: string): ManuscriptData | null {
   if (!value || typeof value !== "object") return null;
@@ -53,4 +53,23 @@ export async function updateProjectManuscript(client: SupabaseClient, userId: st
   const manuscript = parseManuscript(data, projectId, storyId);
   if (!manuscript || manuscript.content !== content) return { kind: "error", message: "저장 결과를 확인하지 못했습니다. 최신 내용을 확인해 주세요." };
   return { kind: "saved", manuscript };
+}
+
+export async function createTitledProjectManuscript(client: SupabaseClient, projectId: string, storyId: string, content: string, title: string, expectedProjectUpdatedAt: string): Promise<SaveResult> {
+  const { data, error } = await client.rpc("zaggas_create_titled_project_manuscript", {
+    p_project_id: projectId, p_story_id: storyId, p_content: content,
+    p_title: title, p_expected_project_updated_at: expectedProjectUpdatedAt,
+  });
+  if (error) {
+    if (["55000", "40001", "23505"].includes(error.code)) return { kind: "conflict", message: "작업 정보나 원고 저장 상태가 변경되었습니다. 입력한 내용은 그대로 두었습니다." };
+    return { kind: "error", message: "저장 결과를 확인하지 못했습니다. 같은 요청으로 다시 시도해 주세요." };
+  }
+  const manuscript = parseManuscript(data, projectId, storyId);
+  if (!manuscript || manuscript.content !== content || data.title !== title ||
+      (data.status !== "created" && data.status !== "existing_retry") ||
+      !(data.project_title === null || (typeof data.project_title === "string" && !validateTitle(data.project_title))) ||
+      !isTimestamp(data.project_updated_at)) {
+    return { kind: "error", message: "저장 결과를 확인하지 못했습니다. 같은 요청으로 다시 시도해 주세요." };
+  }
+  return { kind: "saved", manuscript, status: data.status, project: { title: data.project_title, updatedAt: data.project_updated_at } };
 }

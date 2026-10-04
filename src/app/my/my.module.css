@@ -1,0 +1,11 @@
+.page { max-width: 800px; margin: 0 auto; padding: 40px 32px 80px; }
+.page h1 { font-weight: 500; }
+.intro { color: #66635c; margin-bottom: 24px; }
+.list { list-style: none; padding: 0; margin: 36px 0; }
+.list li { padding: 28px 0; border-top: 1px solid #ddd8cd; }
+.list h2 { font-size: 22px; font-weight: 500; margin: 0 0 6px; overflow-wrap: anywhere; }
+.list h2 a { text-decoration: none; }
+.seed { white-space: pre-wrap; overflow-wrap: anywhere; margin: 16px 0; }
+.meta { color: #77736a; font-size: 12px; margin: 8px 0 16px; }
+.empty { padding: 40px 0; color: #66635c; }
+@media (max-width: 600px) { .page { padding: 24px 24px 56px; } }

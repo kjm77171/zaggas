@@ -1,0 +1,15 @@
+.workspace { max-width: 860px; margin: 0 auto; padding: 28px 32px 80px; }
+.back { font-size: 14px; color: #66635c; }
+.workspace h1 { font-size: clamp(26px, 4vw, 38px); font-weight: 500; margin: 32px 0 8px; }
+.context, .seed { color: #66635c; font-size: 14px; margin: 12px 0; }
+.seed p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.workspace summary { cursor: pointer; padding: 6px 0; }
+.editorForm { display: flex; flex-direction: column; gap: 12px; margin-top: 32px; }
+.editorForm label { font-size: 14px; color: #66635c; }
+.editorForm textarea { width: 100%; min-height: 48svh; padding: 20px; font-size: 17px; line-height: 1.9; background: #fffdf8; color: inherit; border: 1px solid #d4cfc2; border-radius: 2px; resize: vertical; }
+.saveRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; color: #66635c; }
+.workspace button { background: transparent; color: #282724; border: 0; border-bottom: 1px solid currentColor; border-radius: 0; padding: 10px 4px; min-height: 44px; }
+.workspace button:disabled { cursor: default; }
+.note { color: #77736a; font-size: 12px; }
+.recovery { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; }
+@media (max-width: 600px) { .workspace { padding: 20px 24px 56px; } .editorForm textarea { padding: 14px; min-height: 50svh; font-size: 16px; } }

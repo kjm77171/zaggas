@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import StartStoryButton from "./StartStoryButton";
 import MiniExperience from "./MiniExperience";
 import { interests } from "./interests";
 import styles from "./firstExperience.module.css";
@@ -9,7 +10,7 @@ import KakaoStartButton from "@/app/auth/KakaoStartButton";
 import { restoreState, saveState, type ExperienceState, type ExperienceStep } from "./draft";
 const subscribe = () => () => {};
 
-function Experience() {
+function Experience({ isAuthenticated }: { isAuthenticated: boolean }) {
   const [state, setState] = useState<ExperienceState>(restoreState);
   const [startError, setStartError] = useState("");
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -80,7 +81,7 @@ function Experience() {
             <blockquote className={styles.sentence}>{sentence}</blockquote>
             <p className={styles.question}>이 이야기에서 가장 먼저 떠오르는 사람은 누구인가요?</p>
             <p className={styles.description}>지금 적은 한 문장이<br />당신의 첫 번째 이야기의 시작이 될 수 있습니다.</p>
-            <KakaoStartButton draft={state} />
+            {isAuthenticated ? <StartStoryButton draft={state} /> : <KakaoStartButton draft={state} />}
             <button className={styles.back} onClick={() => goTo("mini")}>내 문장 다시 보기</button>
             <p className={styles.note}>작성한 문장을 당신의 공간에 보관하고 이어갈 수 있어요.</p>
           </>}
@@ -90,7 +91,7 @@ function Experience() {
   );
 }
 
-export default function FirstExperience() {
+export default function FirstExperience({ isAuthenticated }: { isAuthenticated: boolean }) {
   const isClient = useSyncExternalStore(subscribe, () => true, () => false);
-  return isClient ? <Experience /> : <main className={styles.experience} aria-busy="true"></main>;
+  return isClient ? <Experience isAuthenticated={isAuthenticated} /> : <main className={styles.experience} aria-busy="true"></main>;
 }

@@ -35,3 +35,24 @@ export async function signOut() {
   revalidatePath("/", "layout");
   redirect("/");
 }
+
+export async function ensureProfile(): Promise<{ error?: string }> {
+  try {
+    const supabase = await createSupabaseSessionClient();
+    const { data, error: authError } = await supabase.auth.getClaims();
+    const userId = data?.claims.sub;
+    if (authError || !userId) return { error: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
+    const existing = await supabase.from("profiles").select("user_id").eq("user_id", userId).maybeSingle();
+    if (existing.error) return { error: "사용자 정보를 확인하지 못했습니다. 다시 시도해 주세요." };
+    if (!existing.data) {
+      const inserted = await supabase.from("profiles").insert({ user_id: userId });
+      if (inserted.error && inserted.error.code !== "23505") return { error: "사용자 정보를 준비하지 못했습니다. 다시 시도해 주세요." };
+      const verified = await supabase.from("profiles").select("user_id").eq("user_id", userId).maybeSingle();
+      if (verified.error || !verified.data) return { error: "사용자 정보를 확인하지 못했습니다. 다시 시도해 주세요." };
+    }
+    revalidatePath("/my");
+    return {};
+  } catch {
+    return { error: "사용자 정보를 준비하지 못했습니다. 다시 시도해 주세요." };
+  }
+}

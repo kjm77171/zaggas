@@ -60,7 +60,7 @@ function Experience() {
 
   return (
     <main className={styles.experience}>
-      <header className={styles.header}><span className={styles.brand}>ZAGGAS</span>{step !== "landing" && <button type="button" className={styles.back} onClick={() => goTo(previousSteps[step]!)}>이전</button>}</header>
+      {step !== "landing" && <div className={styles.stepNavigation}><button type="button" className={styles.back} onClick={() => goTo(previousSteps[step]!)}>이전</button></div>}
       <section className={styles.content} aria-labelledby="experienceTitle">
         {startError && <p role="alert" className={styles.error}>{startError}</p>}
         <div key={step} className={styles.step}>
@@ -92,5 +92,5 @@ function Experience() {
 
 export default function FirstExperience() {
   const isClient = useSyncExternalStore(subscribe, () => true, () => false);
-  return isClient ? <Experience /> : <main className={styles.experience} aria-busy="true"><header className={styles.header}><span className={styles.brand}>ZAGGAS</span></header></main>;
+  return isClient ? <Experience /> : <main className={styles.experience} aria-busy="true"></main>;
 }

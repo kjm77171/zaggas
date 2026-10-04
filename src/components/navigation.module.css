@@ -1,0 +1,12 @@
+.shell { min-height: 100vh; min-height: 100svh; background: #f8f7f3; color: #282724; font-family: Arial, "Malgun Gothic", sans-serif; }
+.header { max-width: 1120px; margin: 0 auto; padding: 28px 0; min-height: 100px; display: flex; align-items: center; justify-content: space-between; gap: 20px; width: 86%; }
+.brand { font-size: 17px; font-weight: 700; letter-spacing: .12em; text-decoration: none; }
+.navigation { display: flex; align-items: center; gap: 24px; font-size: 14px; }
+.navigation a { text-decoration: none; padding: 10px 0; }
+.menuButton { font: inherit; background: transparent; color: inherit; border: 0; padding: 10px 0; border-radius: 0; cursor: pointer; }
+.account { position: relative; }
+.menu { position: absolute; right: 0; top: 100%; min-width: 190px; padding: 12px 18px; background: #f8f7f3; z-index: 10; }
+.menu:not([hidden]) { display: flex; flex-direction: column; align-items: flex-start; }
+.menu a, .menu form { width: 100%; }
+.brand:focus-visible, .navigation a:focus-visible, .menuButton:focus-visible { outline: 2px solid #716345; outline-offset: 4px; }
+@media (max-width: 600px) { .header { width: auto; margin: 0 24px; padding: 20px 0; min-height: 80px; gap: 12px; } .navigation { gap: 16px; font-size: 13px; } }

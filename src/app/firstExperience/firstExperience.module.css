@@ -1,4 +1,4 @@
-.experience { min-height: 100vh; min-height: 100svh; background: #f8f7f3; color: #282724; font-family: Arial, "Malgun Gothic", sans-serif; padding: 0 7vw 64px; }
+.experience { min-height: calc(100svh - 100px); background: #f8f7f3; color: #282724; font-family: Arial, "Malgun Gothic", sans-serif; padding: 0 7vw 64px; }
 .header { max-width: 1120px; margin: 0 auto; padding: 34px 0; display: flex; align-items: center; justify-content: space-between; min-height: 100px; }
 .brand { font-size: 17px; font-weight: 700; letter-spacing: .12em; }
 .content { max-width: 640px; margin: 0 auto; padding: clamp(48px, 12vh, 120px) 0 32px; }
@@ -39,3 +39,4 @@
 .projectList li { padding: 24px 0; border-bottom: 1px solid #ddd9cf; }
 .projectList h2 { font-size: 17px; font-weight: 500; margin: 0 0 14px; }
 .projectList .sentence { font-size: 20px; margin: 0; }
+.stepNavigation { max-width: 640px; margin: 0 auto; padding-top: 8px; }

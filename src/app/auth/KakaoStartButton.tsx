@@ -5,7 +5,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { saveState, validateOnboardingDraft, type ExperienceState } from "@/app/firstExperience/draft";
 import styles from "@/app/firstExperience/firstExperience.module.css";
 
-export default function KakaoStartButton({ draft }: { draft?: ExperienceState }) {
+export default function KakaoStartButton({ draft, label = "카카오로 시작하기" }: { draft?: ExperienceState; label?: string }) {
   const inFlight = useRef(false);
   const draftIdRef = useRef(draft?.draftId);
   const [busy, setBusy] = useState(false);
@@ -46,7 +46,7 @@ export default function KakaoStartButton({ draft }: { draft?: ExperienceState })
   }
 
   return <div>
-    <button type="button" className={styles.kakao} disabled={busy} onClick={start}>{busy ? "카카오로 이동하고 있어요…" : "카카오로 시작하기"}</button>
+    <button type="button" className={styles.kakao} disabled={busy} onClick={start}>{busy ? "카카오로 이동하고 있어요…" : label}</button>
     {error && <p className={styles.error} role="alert">{error}</p>}
   </div>;
 }

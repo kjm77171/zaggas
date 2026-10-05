@@ -1,15 +1,23 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { createManuscriptAction, createTitledManuscriptAction, renameProjectAction, saveManuscriptAction } from "./actions";
+import { useEffect, useRef, useState, startTransition, type ReactNode } from "react";
+import { createManuscriptAction, createTitledManuscriptAction, renameProjectAction, saveManuscriptAction, updateCreationTypeAction } from "./actions";
 import { validateContent, validateTitle, type ManuscriptLoad, type SaveState, type ProjectTitleData } from "./workspaceTypes";
-import { getProjectTitle } from "@/lib/projectPresentation";
+import { creationTypes, type CreationType } from "@/lib/creationTypes";
+import { getCreationTypeLabel, getProjectTitle } from "@/lib/projectPresentation";
 import styles from "./workspace.module.css";
 type FirstRequest = { storyId: string; content: string; title: string | null; expectedProjectUpdatedAt: string };
-export default function WritingWorkspace({ projectId, initial, initialProject, creationLabel, children }: {
-  projectId: string; initial: ManuscriptLoad; initialProject: ProjectTitleData; creationLabel: string; children: ReactNode;
+export default function WritingWorkspace({ projectId, initial, initialProject, initialCreationType, children }: {
+  projectId: string; initial: ManuscriptLoad; initialProject: ProjectTitleData; initialCreationType: CreationType | null; children: ReactNode;
 }) {
   const [project, setProject] = useState(initialProject);
+  const [creationType, setCreationType] = useState(initialCreationType);
+  const [typeDraft, setTypeDraft] = useState(initialCreationType);
+  const [typePanel, setTypePanel] = useState(false);
+  const [typeState, setTypeState] = useState<"idle" | "saving" | "error" | "conflict">("idle");
+  const [typeMessage, setTypeMessage] = useState("");
+  const typeHeadingRef = useRef<HTMLHeadingElement>(null);
+  const typeButtonRef = useRef<HTMLButtonElement>(null);
   const [titleDraft, setTitleDraft] = useState(initialProject.title ?? "");
   const [titleEditing, setTitleEditing] = useState(false);
   const [titlePanel, setTitlePanel] = useState(false);
@@ -29,8 +37,9 @@ export default function WritingWorkspace({ projectId, initial, initialProject, c
   const blocked = initial.kind === "multiple";
   const dirty = content !== savedContent;
   const titleDirty = titleDraft !== (project.title ?? "");
-  const busy = state === "saving" || titleState === "saving";
-  const unsaved = dirty || titleDirty || busy || hasRetry;
+  const typeDirty = typeDraft !== creationType;
+  const busy = state === "saving" || titleState === "saving" || typeState === "saving";
+  const unsaved = dirty || titleDirty || typeDirty || busy || hasRetry;
   useEffect(() => {
     if (!unsaved) return;
     function warn(event: BeforeUnloadEvent) { event.preventDefault(); event.returnValue = ""; }
@@ -40,6 +49,29 @@ export default function WritingWorkspace({ projectId, initial, initialProject, c
   useEffect(() => {
     if (titleEditing || titlePanel) titleRef.current?.focus();
   }, [titleEditing, titlePanel]);
+  useEffect(() => { if (typePanel) typeHeadingRef.current?.focus(); }, [typePanel]);
+  function cancelType() {
+    setTypeDraft(creationType); setTypePanel(false); setTypeState("idle"); setTypeMessage("");
+    typeButtonRef.current?.focus();
+  }
+  async function saveType() {
+    if (inFlight.current || blocked || hasRetry || typeState === "conflict") return;
+    if (!typeDirty) { cancelType(); return; }
+    inFlight.current = true; setTypeState("saving"); setTypeMessage("");
+    try {
+      const result = await updateCreationTypeAction({ projectId, creationType: typeDraft, expectedProjectUpdatedAt: project.updatedAt });
+      if (result.kind === "saved") {
+        setCreationType(result.creationType); setTypeDraft(result.creationType);
+        setProject(current => ({ ...current, updatedAt: result.updatedAt }));
+        setTypePanel(false); setTypeState("idle"); setTypeMessage("작품 형식을 저장했습니다.");
+        typeButtonRef.current?.focus();
+      } else {
+        setTypeMessage(result.message); setTypeState(result.kind === "conflict" ? "conflict" : "error");
+      }
+    } catch {
+      setTypeMessage("형식 저장 결과를 확인하지 못했습니다. 선택은 그대로 두었습니다."); setTypeState("error");
+    } finally { inFlight.current = false; }
+  }
   async function save(confirmTitle = false) {
     if (inFlight.current || blocked || state === "conflict") return;
     const invalid = validateContent(requestRef.current?.content ?? content);
@@ -122,9 +154,28 @@ export default function WritingWorkspace({ projectId, initial, initialProject, c
   return <>
     <Link href="/my" className={styles.back} onClick={(event) => { if (unsaved && !window.confirm("아직 저장을 확인하지 못한 내용이 있습니다. 이동할까요?")) event.preventDefault(); }}>← My ZAGGAS</Link>
     <header className={styles.titleArea}>
-      <p className={styles.context}>{creationLabel}</p>
+      <button ref={typeButtonRef} type="button" className={styles.typeButton} disabled={blocked || busy || hasRetry || titleEditing || titlePanel} aria-expanded={typePanel} aria-controls="creationTypePanel" onClick={() => { setTypePanel(true); setTypeMessage(""); }}>
+        {creationType === null ? "작품 형식 정하기" : `${getCreationTypeLabel(creationType)} · 변경`}
+      </button>
+      {typePanel && <section id="creationTypePanel" className={styles.typePanel} aria-labelledby="creationTypeQuestion">
+        <h2 id="creationTypeQuestion" ref={typeHeadingRef} tabIndex={-1}>이 이야기를 어떤 모습으로 만들어볼까요?</h2>
+        <p className={styles.note}>지금 정하지 않아도 계속 쓸 수 있어요.</p>
+        <form onSubmit={event => { event.preventDefault(); startTransition(async () => { await saveType(); }); }}>
+          <fieldset className={styles.typeOptions} disabled={busy || hasRetry}>
+            <legend className={styles.note}>마음이 가는 모습을 하나 골라주세요.</legend>
+            {creationTypes.map(item => <label key={item.code} className={styles.typeOption}>
+              <input type="radio" name="creationType" value={item.code} checked={typeDraft === item.code} onChange={() => { setTypeDraft(item.code); if (typeState !== "conflict") { setTypeState("idle"); setTypeMessage(""); } }} />
+              <span>{item.label}<small>{item.description}</small></span>
+            </label>)}
+            <label className={styles.typeOption}><input type="radio" name="creationType" value="" checked={typeDraft === null} onChange={() => { setTypeDraft(null); if (typeState !== "conflict") { setTypeState("idle"); setTypeMessage(""); } }} /><span>아직 모르겠어요<small>쓰면서 천천히 정해도 괜찮아요</small></span></label>
+          </fieldset>
+          <div className={styles.recovery}><button type="submit" disabled={busy || hasRetry || typeState === "conflict"}>이대로 정하기</button><button type="button" disabled={busy} onClick={cancelType}>취소</button></div>
+        </form>
+      </section>}
+      <p role="status" aria-live="polite" className={styles.note}>{typeState === "saving" ? "형식을 저장하고 있어요…" : typeMessage}</p>
+      {(typeState === "conflict" || typeState === "error") && <button type="button" disabled={busy} onClick={reload}>최신 정보 다시 불러오기</button>}
       <h1>{getProjectTitle(project.title)}</h1>
-      {!blocked && !titleEditing && !titlePanel && (project.title !== null || manuscript) && <button type="button" disabled={busy || hasRetry} onClick={() => { setTitleEditing(true); setTitleMessage(""); }}>제목 변경</button>}
+      {!blocked && !titleEditing && !titlePanel && (project.title !== null || manuscript) && <button type="button" disabled={busy || hasRetry || typePanel} onClick={() => { setTitleEditing(true); setTitleMessage(""); }}>제목 변경</button>}
       {titleEditing && !titlePanel && <form className={styles.titleForm} onSubmit={(event) => { event.preventDefault(); void renameTitle(); }}>
         {titleInput}
         <div className={styles.recovery}><button type="submit" disabled={busy || hasRetry || !titleDirty || titleState === "conflict"}>제목 저장</button><button type="button" disabled={busy} onClick={cancelTitle}>취소</button></div>

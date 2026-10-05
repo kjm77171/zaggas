@@ -1,3 +1,4 @@
+import type { CreationType } from "@/lib/creationTypes";
 export type ManuscriptData = { id: string; projectId: string; content: string; createdAt: string; updatedAt: string };
 export type ManuscriptLoad = { kind: "empty" } | { kind: "single"; manuscript: ManuscriptData } | { kind: "multiple" };
 export type SaveResult = { kind: "saved"; manuscript: ManuscriptData; status?: "created" | "existing_retry"; project?: ProjectTitleData } | { kind: "error" | "conflict" | "authRequired"; message: string };
@@ -21,3 +22,5 @@ export function validateTitle(value: unknown): string | null {
 export function isTimestamp(value: unknown): value is string {
   return typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value) && Number.isFinite(Date.parse(value));
 }
+
+export type CreationTypeResult = { kind: "saved"; creationType: CreationType | null; updatedAt: string } | { kind: "error" | "conflict" | "authRequired"; message: string };

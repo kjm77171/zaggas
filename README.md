@@ -32,8 +32,8 @@ DB 조회가 성공한 경우에만 빈 목록을 표시하며, 설정 누락과
 
 `/my` → `/projects/[id]`. 첫 저장은 사용자 session으로 manuscript RPC를 호출하고, 이후 content만 updated_at 조건으로 수정합니다.
 원고는 공백-only를 허용하지 않으며 최대 100000 Unicode code points입니다. 충돌 시 입력을 유지하고 자동 덮어쓰지 않습니다.
-저장은 명시적 버튼으로 수행합니다. 제목 미정 Project의 첫 저장은 제목 확정과 원고 생성을 하나의 RPC로 처리하며, 기존 제목이 있으면 기존 manuscript RPC를 사용합니다. 제목 변경은 Project만 optimistic UPDATE하고 Story 제목은 생성 당시 snapshot으로 유지합니다. 창작 형식은 읽기 전용이며 시작 문장은 원고에 자동 삽입하지 않습니다.
-/my는 최근 원고 저장을 우선해 이어쓰기를 안내합니다. 제목 변경 시각은 이어쓰기 순서와 원고 저장 날짜에 사용하지 않습니다.
+저장은 명시적 버튼으로 수행합니다. 제목 미정 Project의 첫 저장은 제목 확정과 원고 생성을 하나의 RPC로 처리하며, 기존 제목이 있으면 기존 manuscript RPC를 사용합니다. 제목 변경은 Project만 optimistic UPDATE하고 Story 제목은 생성 당시 snapshot으로 유지합니다. 창작 형식은 Workspace에서 사용자가 직접 선택하고 확정합니다. 미결정(NULL)에서도 글을 쓸 수 있고 나중에 변경하거나 미결정으로 돌아갈 수 있습니다. 시작 문장은 원고에 자동 삽입하지 않습니다.
+/my는 최근 원고 저장을 우선해 이어쓰기를 안내합니다. 제목·형식 변경 시각은 이어쓰기 순서와 원고 저장 날짜에 사용하지 않습니다. 형식은 owner session으로 creation_type만 optimistic UPDATE하며 제목과 최신 Project.updated_at을 공유합니다. 동일 값 확정은 UPDATE하지 않고, 불확실한 최초 저장 재시도 중에는 형식 변경을 막습니다.
 기존 privileged Story CRUD는 제거했고 `/stories` 경로는 DB 접근 없이 404로 차단합니다.
 
 ## 보안 및 배포

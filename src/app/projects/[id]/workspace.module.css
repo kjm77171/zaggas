@@ -22,3 +22,12 @@
 .titleForm input { width: 100%; min-width: 0; padding: 12px; font: inherit; background: #fffdf8; border: 1px solid #d4cfc2; border-radius: 2px; }
 .titlePanel { margin-top: 36px; padding-top: 24px; border-top: 1px solid #ddd8cd; }
 .titlePanel h2 { font-size: 20px; font-weight: 500; line-height: 1.6; }
+
+.typeButton { font-size: 13px; color: #66635c; }
+.typePanel { margin: 24px 0; max-width: 540px; }
+.typePanel h2 { font-size: 20px; font-weight: 500; line-height: 1.6; }
+.typeOptions { border: 0; padding: 0; margin: 24px 0; display: flex; flex-direction: column; gap: 18px; }
+.typeOptions legend { margin-bottom: 18px; }
+.typeOption { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; padding: 4px 0; }
+.typeOption input { margin-top: 5px; accent-color: #282724; flex-shrink: 0; }
+.typeOption small { display: block; margin-top: 5px; color: #77736a; font-size: 13px; line-height: 1.6; }

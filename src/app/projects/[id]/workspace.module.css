@@ -44,3 +44,10 @@
   .editorForm { margin-top: 16px; }
   .saveRow { flex-wrap: wrap; gap: 12px; }
 }
+
+.unitSection { margin-top: var(--z-space-12); }
+.unitList { list-style: none; padding: 0; margin: var(--z-space-6) 0; }
+.unitList li { margin-bottom: var(--z-space-6); }
+.unitList a { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--z-space-4); min-height: 44px; padding: var(--z-space-2) 0; text-decoration: none; overflow-wrap: anywhere; }
+.unitList a:hover { text-decoration: underline; }
+@media (max-width: 600px) { .unitSection { margin-top: var(--z-space-8); } }

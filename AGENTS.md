@@ -111,7 +111,7 @@
 - projects.seed_sentence는 처음 이야기를 시작한 생각인 ‘이야기의 출발점’이다. 원고·방향·시놉시스·공개 소개와 구분하고 자동 복사하거나 원고에 삽입하지 않는다.
 - 출발점은 원고가 없으면 최초 펼침, 기존 원고가 있으면 최초 접힘이다. 의미 있는 seed가 없으면 생략하며 사용자가 자유롭게 펼치고 접는다. 같은 집필 세션의 첫 저장 후 자동으로 접지 않는다.
 - Workspace는 Project Context → Story Origin → Manuscript 위계를 유지한다. 제목은 작품의 정체성, 형식은 가벼운 보조 맥락이며 원고가 주요 Canvas이다. raw 관심사는 현재 Workspace UI에 노출하지 않는다.
-- Creation Type은 현재 맥락만 변경하며 편집기·원고·저장 내용을 변환하지 않는다. 시나리오·소설·웹소설·에세이와 NULL 모두 같은 원고 편집기를 사용한다.
+- Creation Type은 현재 맥락만 변경하며 편집기·원고·저장 내용을 변환하지 않는다. Focus는 Unit.content_format 기준이며 PROSE는 E2 편집·Autosave, SCREENPLAY_BLOCKS는 읽기 전용이다. Project 형식과 NULL은 기존 Unit 저장 문법을 바꾸지 않는다.
 - 실제 두 번째 창작 도구가 생길 때만 최소 탐색을 추가한다. STEP 6 방향은 ‘원고 / 이야기의 방향’이며 인물·장면·세계·구성·장·회차·AI의 빈 메뉴나 Coming Soon UI를 만들지 않는다.
 
 ## 이야기의 방향 — 승인된 제품 원칙
@@ -159,10 +159,24 @@
 
 ## 완료된 제품 상태와 다음 승인 경계
 - 완료된 기능: Public Home, First Experience, Kakao Auth/onboarding, My ZAGGAS, Project 생성, private 원고 Workspace, 제목·Continuation 흐름, 명시적 Creation Type 선택, 정돈된 CREATE Workspace Skeleton. 이미 완료된 기능을 미래 작업으로 취급하지 않는다.
-- 회귀 보호 대상: First Experience → Project → Workspace → manuscript → title decision → atomic first save → My ZAGGAS → continue writing. 제목·형식·원고 저장, 충돌·재시도·미저장 입력 보호도 유지한다.
+- DAY04 회귀 보호 대상: First Experience → Project → Workspace → manuscript → title decision → atomic first save → My ZAGGAS → continue writing. 기존 데이터와 충돌·재시도·미저장 입력 보호를 유지한다. DAY05 Unit 전환에서는 제목 결정을 저장의 선행 조건으로 삼지 않으며 기존 Story 계약과 신규 Unit 계약을 구분한다.
 - 기술 기반: Next.js / TypeScript / React / Supabase / App Router.
 - DAY04 STEP 5 기준점은 ca6df28e116e58bccf7e5405fd2dc200564f17d8이다. 완료 이력이며 이후 작업의 고정 HEAD 요구값이 아니다. 매번 실제 Git 상태와 해당 요청의 expected HEAD를 확인한다.
-- STEP 5는 완료되었다. Story Direction 저장 migration은 적용·commit되었으며 F1 application과 Visual Grammar v1 구현은 현재 미커밋 검토 상태이다. 현재 우선순위는 Visual Grammar 기반 검토 → Story Direction 최종 F3 UX → CREATE Workspace 발전이다. 문서 동기화는 F3 구현 승인이 아니며 migration·DB·application·Git 작업은 각각 승인 범위에서만 진행한다.
+- DAY04는 완료되었다. Story Direction MVP와 Visual Grammar v1은 최종 runtime 검증 및 commit/push를 마쳤다. DAY05 00003 schema와 00004 legacy backfill은 사용자가 Remote 적용·검증을 완료했다. E1 application은 manuscript_units 조회, writing activity 기반 Continuation, Unit 생성 RPC와 Workspace/읽기 전용 Focus route로 전환했다. E1 실제 첫 Unit 생성·NULL 제목 runtime 검증은 완료했으며 E1 COMPLETE이다. E2 PROSE 편집·Autosave와 IndexedDB 임시 백업/복원은 구현·계약 테스트·실제 Autosave 검증 COMPLETE이다. 최종 사용자 화면 확인과 Git 마무리는 별도 단계이며 실제 IME·로그아웃 경고 UI의 사용자 조작 확인을 자동 테스트로 대체하지 않는다. SCREENPLAY_BLOCKS 편집과 AI는 미구현이다. migration 적용·데이터 전환·application 구현·Git 마무리는 각각 별도 승인 범위이다.
+
+## DAY05 CREATE / Focus Editor 저장 원칙
+- My ZAGGAS는 이야기를 다시 만나는 공간, Workspace는 작품 전체를 바라보는 공간, Focus Editor는 실제 원고를 쓰는 공간이다. 작품 선택은 Workspace, 이어 쓰기는 마지막으로 작성한 활성 Unit의 Focus Editor로 이동한다. 활성 Unit이 없으면 Workspace로 이동한다.
+- 제목·형식·metadata는 글쓰기를 막지 않는다. 신규 Unit은 제목 없이 비어 있어도 생성·저장할 수 있다. Focus Editor에서는 필요한 기능만 노출하며 플랫폼 navigation을 상시 표시하지 않는다.
+- projects.creation_type은 현재 작품 형식이고 manuscript_units.content_format은 실제 저장 문법이다. 신규 Unit의 기본값은 SCREENPLAY일 때 SCREENPLAY_BLOCKS, 그 외와 NULL은 PROSE이다. 형식 변경만으로 기존 원고를 변환하지 않는다. 문법 변환은 별도 명시적 Migration UX로 다룬다.
+- Story Direction은 Explicit Save, Manuscript는 Autosave이다. 본문은 Unit별 integer revision, 구조는 Project별 manuscript_structure_revision으로 관리하며 서로의 revision을 변경하지 않는다. Screenplay는 Unit revision 하나 아래 전체 Block snapshot을 원자적으로 저장한다.
+- Unit당 저장 요청은 직렬화하되 저장 중에도 입력할 수 있다. debounce 초기값은 약 800ms로 한곳에서 관리하며 한국어 IME 조합 중에는 snapshot을 만들지 않는다. 오류·conflict·결과 불명 상태에서 local draft를 버리거나 최신 서버 원고를 조용히 덮어쓰지 않는다. 결과 불명 재시도는 동일 request ID와 동일 snapshot을 유지한다.
+- 실제 원고 변경 저장만 last_writing_at과 last_written_unit_id를 갱신한다. 빈 Unit 생성, noop, Direction, 제목·형식·순서 등 metadata 변경은 writing activity가 아니다. 이어 쓰기 대상은 같은 Project의 활성 Unit인지 확인한다. metadata 충돌 기준과 writing activity를 분리한다.
+- E2는 immutable snapshot과 Unit 편집 경계별 한 in-flight 요청을 유지한다. 새 입력은 기존 요청 확인 후 다음 snapshot으로 저장하며 결과 불명 재시도는 동일 payload/revision/request ID를 사용한다. 충돌 상태도 백업하고 복원 후 자동 덮어쓰기를 금지한다. 내부 이동과 beforeunload를 보호하며 Browser Back은 router-level guard가 필요하여 보류한다.
+- Local Draft Backup은 영구 저장소가 아닌 임시 복구 장치이며 server-confirmed manuscript가 영구 source of truth이다. IndexedDB key는 userId / projectId / unitId / 탭별 backupId를 포함한다. backup timestamp 기준 7일 초과 항목은 복구 후보에서 제외하고 Focus 진입 등 안전한 시점에 정리하며, 매 입력마다 전체 정리하거나 브라우저 종료 시 삭제하지 않는다.
+- 로그아웃 전 DIRTY / SAVING / ERROR / RESULT_UNKNOWN 및 서버와 다른 복구 가능한 백업을 확인한다. 미확인 원고가 있으면 ‘돌아가서 확인’과 ‘로그아웃하고 삭제’를 제공하며 명시적 선택 전에는 로그아웃하지 않는다. 정상 로그아웃과 명시적 삭제 로그아웃 모두 해당 userId 백업만 삭제한다. 다른 계정은 보존하고 서버와 동일한 confirmed 백업은 미확인 원고로 취급하지 않는다.
+- 공용 기기 안내는 복구·저장 오류·로그아웃처럼 관련 있는 순간에만 조용하게 표시한다. 백업에는 최소 식별자와 복구 상태만 저장하며 access token / refresh token / OAuth credential / secret을 저장하지 않는다. 복원 시 서버를 자동 덮어쓰지 않는다.
+- 기존 stories는 preflight → 복사 → 검증 → application 기준 전환 후에도 보존한다. dual-write, 임의 소유권 귀속, 기존 SCREENPLAY plain text 자동 Block 파싱은 금지한다. legacy 제거와 데이터 rollback은 별도 승인 대상이다.
+- Autosave는 private 원고 보존이며 Publish와 분리한다. 삭제·이동 UI, AI API/UI, Stage/Purpose와 후속 기능은 이번 저장 기반 초안의 구현 범위가 아니다.
 
 ## 확장과 화면 검토 기준
 - DB는 현재 화면만을 기준으로 설계하지 않는다. User / Project / Creation Type / Story / Character / Creation Unit / Publish / Reaction 확장을 열어두되 사용하지 않는 table을 만들거나 미확정 모델의 relational / JSON 저장 방식을 미리 선택하지 않는다. 공통 Domain과 형식별 Domain을 개념적으로 구분한다.

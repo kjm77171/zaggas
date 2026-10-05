@@ -1,0 +1,49 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>E2 로컬 검증</title><body><h1>IndexedDB / 복원 계약 검증</h1><button id="run">검증 실행</button><pre id="result" role="status"></pre><script type="module">
+import { ProseAutosave } from '/proseAutosave.js';
+import { readProseBackups, writeProseBackup, clearProseBackups, hasUnconfirmedProseBackup } from '/proseBackup.js';
+import { logoutWithDrafts } from '/proseLogout.js';
+import { registerProseEditor } from '/proseSession.js';
+const identity = {userId:'zaggas-e2-harness',projectId:'test-project',unitId:'test-unit',backupId:crypto.randomUUID()};
+const results = []; const check = (name,value) => { results.push({name,pass:Boolean(value)}); if (!value) throw Error(name); };
+document.getElementById('run').onclick = async () => {
+  document.getElementById('run').disabled = true;
+  try {
+    await clearProseBackups(identity.userId);
+    const first = new ProseAutosave(identity,{content:null,revision:0},async()=>({status:'unknown',message:'test network failure'}),writeProseBackup,()=>{});
+    first.activate(); first.input('local A'); await first.flush(); const snapshot = first.pending;
+    first.input('local A+B'); await first.backup(); first.dispose();
+    const stored = (await readProseBackups(identity.userId,identity.projectId,identity.unitId))[0];
+    check('native IndexedDB persisted draft and immutable pending snapshot',stored.content==='local A+B' && stored.pending.content==='local A' && stored.pending.requestId===snapshot.requestId);
+    check('unconfirmed logout warning required',await hasUnconfirmedProseBackup(identity.userId));
+    const restored = new ProseAutosave({...identity,backupId:crypto.randomUUID()},{content:'local A',revision:1},async request=>{check('exact retry after re-entry',JSON.stringify(request)===JSON.stringify(snapshot));return {status:'existing_retry',current:{content:'local A',revision:1}};},writeProseBackup,()=>{});
+    check('no save before restore choice',restored.blocked);
+    restored.activate(stored); check('pending restore enters result unknown',restored.phase==='RESULT_UNKNOWN'); await restored.flush(); check('newer local draft preserved after retry',restored.draft==='local A+B' && restored.confirmed.revision===1); restored.dispose();
+    await clearProseBackups(identity.userId); check('logout account backup removal',(await readProseBackups(identity.userId,identity.projectId,identity.unitId)).length===0);
+    await writeProseBackup({...stored,pending:null,timestamp:Date.now()-8*86400000}); check('7 day expiry',(await readProseBackups(identity.userId,identity.projectId,identity.unitId)).length===0);
+    const otherUser = identity.userId + '-other';
+    await clearProseBackups(otherUser);
+    await writeProseBackup({...stored, userId:otherUser, pending:null, conflicted:false});
+    check('M other account never appears',(await readProseBackups(identity.userId,identity.projectId,identity.unitId)).length===0);
+    await writeProseBackup({...stored, pending:null, conflicted:false, timestamp:Date.now()-6*86400000});
+    check('L within 7 days recoverable',(await readProseBackups(identity.userId,identity.projectId,identity.unitId)).length===1);
+    let signedOut=0;
+    check('N warning does not log out',await logoutWithDrafts(identity.userId,false,async()=>{signedOut++;})==='confirmation_required' && signedOut===0);
+    check('N cancellation retains draft',(await readProseBackups(identity.userId,identity.projectId,identity.unitId))[0].content===stored.content);
+    await logoutWithDrafts(identity.userId,true,async()=>{signedOut++;});
+    check('N explicit logout removes own records',signedOut===1 && (await readProseBackups(identity.userId,identity.projectId,identity.unitId)).length===0);
+    check('M logout preserves other account',(await readProseBackups(otherUser,identity.projectId,identity.unitId)).length===1);
+    await writeProseBackup({...stored,pending:null,conflicted:false,content:'server confirmed',confirmedContent:'server confirmed',timestamp:Date.now()});
+    check('N confirmed backup needs no warning',!(await hasUnconfirmedProseBackup(identity.userId)));
+    check('N clean logout clears backup',await logoutWithDrafts(identity.userId,false,async()=>{signedOut++;})==='signed_out' && (await readProseBackups(identity.userId,identity.projectId,identity.unitId)).length===0);
+    const active = new ProseAutosave({...identity,backupId:crypto.randomUUID()},{content:null,revision:0},async()=>({status:'unknown',message:'test'}),writeProseBackup,()=>{});
+    active.activate(); active.input('active draft before backup debounce');
+    const unregister=registerProseEditor(identity.userId,active,()=>{});
+    check('N active dirty state warns before disk debounce',await logoutWithDrafts(identity.userId,false,async()=>{signedOut++;})==='confirmation_required');
+    await logoutWithDrafts(identity.userId,true,async()=>{signedOut++;});
+    await new Promise(resolve=>setTimeout(resolve,300));
+    check('N stopped editor cannot recreate cleared backup',active.disposed && (await readProseBackups(identity.userId,identity.projectId,identity.unitId)).length===0);
+    unregister(); await clearProseBackups(otherUser);
+    document.getElementById('result').textContent=JSON.stringify({pass:true,checks:results},null,2);
+  } catch(error) { document.getElementById('result').textContent=JSON.stringify({pass:false,error:String(error),checks:results},null,2); }
+};
+</script></body></html>

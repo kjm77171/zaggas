@@ -1,0 +1,17 @@
+.focus { max-width: var(--z-writing-width); margin: 0 auto; padding: var(--z-space-8) var(--z-space-6) var(--z-space-16); }
+.context { margin: var(--z-space-6) 0; }
+.context h1 { font-size: var(--z-title); font-weight: 500; margin: 0 0 var(--z-space-2); overflow-wrap: anywhere; }
+.surface { margin-top: var(--z-space-12); min-height: 55svh; font-size: 18px; line-height: 2; }
+.surface p { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 var(--z-space-6); }
+.dialogue { margin-inline: var(--z-space-8) !important; }
+@media (max-width: 600px) { .focus { padding-top: var(--z-space-4); } .surface { margin-top: var(--z-space-8); font-size: 17px; } .dialogue { margin-inline: var(--z-space-4) !important; } }
+.editor { margin-top: var(--z-space-8); }
+.writing { display: block; box-sizing: border-box; width: 100%; min-height: 58svh; resize: vertical; border: 0; border-radius: 0; background: transparent; color: inherit; font: inherit; font-size: 18px; line-height: 2; padding: var(--z-space-2) 0; outline-offset: 6px; overflow-wrap: anywhere; }
+.writing:focus { outline: none; }
+.writing:focus-visible { outline: 1px solid var(--z-focus); }
+.status { font-size: 14px; line-height: 1.7; min-height: 2em; margin-top: var(--z-space-4); }
+.status p { margin: var(--z-space-2) 0; }
+.status button, .recovery button { margin-right: var(--z-space-4); }
+.recovery { margin-bottom: var(--z-space-6); }
+.privacy { margin-top: var(--z-space-8); }
+@media (max-width: 600px) { .editor { margin-top: var(--z-space-6); } .writing { font-size: 17px; min-height: 60svh; } }

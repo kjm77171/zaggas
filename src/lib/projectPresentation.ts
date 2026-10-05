@@ -11,11 +11,11 @@ export function formatProjectDate(value: string): string {
 
 export function getProjectTitle(title: string | null): string { return title === null ? "제목 미정" : title; }
 
-export function getContinuationProjects<T extends { id: string; created_at: string }>(projects: T[], summaries: ReadonlyMap<string, { count: number; updatedAt: string }>) {
-  const tieBreak = (a: T, b: T) => Date.parse(b.created_at) - Date.parse(a.created_at) || a.id.localeCompare(b.id);
-  const saved = projects.filter(p => summaries.get(p.id)?.count === 1).sort((a, b) => Date.parse(summaries.get(b.id)!.updatedAt) - Date.parse(summaries.get(a.id)!.updatedAt) || tieBreak(a, b));
-  const empty = projects.filter(p => !summaries.get(p.id)?.count).sort(tieBreak);
-  const review = projects.filter(p => (summaries.get(p.id)?.count ?? 0) >= 2).sort(tieBreak);
-  const normal = [...saved, ...empty];
-  return { hero: normal[0], others: normal.slice(1), review };
+export function getContinuationProjects<T extends { id: string; created_at: string; last_writing_at: string | null }>(projects: T[]) {
+  const ordered = [...projects].sort((a,b) => {
+    if (a.last_writing_at !== null && b.last_writing_at === null) return -1;
+    if (a.last_writing_at === null && b.last_writing_at !== null) return 1;
+    return (a.last_writing_at && b.last_writing_at ? Date.parse(b.last_writing_at) - Date.parse(a.last_writing_at) : 0) || Date.parse(b.created_at) - Date.parse(a.created_at) || a.id.localeCompare(b.id);
+  });
+  return { hero: ordered[0], others: ordered.slice(1) };
 }

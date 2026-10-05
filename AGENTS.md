@@ -49,12 +49,16 @@
 
 ## 제품 가치와 Continuation
 - 핵심 가치: CREATE / CONNECT / MAKE IT POSSIBLE / GROW. Brand: Be real. Be human. Product philosophy: Simple outside. Deep inside.
+- 아직 자신을 창작자라고 생각하지 않는 사람도 작은 생각을 발견하고 발전시켜 작품으로 만들고 세상과 연결하도록 돕는다. MVP 기능은 누군가의 이야기를 한 걸음 앞으로 움직이는지 판단하고, 그렇지 않으면 제외하거나 보류한다.
 - Creation보다 Continuation을 우선한다. 새 Project 생성을 반복 유도하기보다 이미 시작한 이야기를 다시 이어가고 싶게 만든다.
 - 사람이 아니라 이야기를 기다린다. 관계의 중심은 creator follower graph가 아닌 Story / Work / IP이다.
 - /my는 이야기를 다시 이어 쓰는 공간이다. 최근 원고 저장을 우선하고 이어 쓰기를 primary, 새 이야기 시작을 secondary로 유지한다. 제목·형식·이야기의 방향 변경 시각을 원고 저장 시각이나 Continuation 우선순위로 사용하지 않는다. 향후 알림·독자 관계·유지 지표에서도 이미 시작한 이야기를 이어가는 경험을 우선한다.
 
 ## UX와 디자인 참조
-- UX keywords: Quiet / Warm / Spacious / Human / Minimal / Curious. 핵심 화면 원칙: One Screen, One Thought.
+- UX keywords: Quiet / Warm / Spacious / Human / Minimal / Curious. UI 원칙: One Screen, One Thought / One Primary Action / Consistency First / Intuitive First / Quiet by Default / Content First / Creation First, Platform Second / Progressive Complexity / Same Mental Model / AI is a Partner, not the Creator.
+- 잘 정돈된 방처럼 느껴져야 한다. 화면 구성은 달라도 Button / Link / Input / Selection / Work Area / Secondary Action의 역할은 바로 알아볼 수 있어야 한다. 제품상의 이유 없이 화면별 UI 문법을 만들지 않는다.
+- 의미가 같은 UI 역할에는 공유 Design Tokens를 사용하고, 동작과 markup이 같아야 하는 부분에는 공유 Component를 사용한다. 승인된 Visual Grammar v1을 유지하며 임의의 화면별 CSS 값을 피한다. 디자인 시스템은 작게 유지하고 범용 대형 UI framework를 만들지 않는다.
+- 따뜻한 흰색·off-white 배경, charcoal 본문, gray 보조 텍스트, 절제된 강조색 하나를 사용한다. 큰 여백과 typography로 위계를 만들고 border·shadow·gradient·motion을 과하게 사용하지 않는다. 상호작용은 미묘하게 표현하고 장식적 motion을 복사하지 않는다.
 - 복잡한 dashboard를 기본값으로 만들지 않는다. 기능이 늘어도 첫 화면과 주요 창작 흐름은 단순하고 직관적으로 유지한다.
 - Premium한 느낌은 typography·whitespace·alignment·rhythm·content width로 만든다. border·card·shadow·gradient·badge·dashboard metric·button을 과도하게 사용하지 않는다.
 - Cosmos는 Visual Tone 참조이다. 여백·타이포그래피·시각적 호흡과 밀도를 참고하며 특정 화면을 복사하지 않는다.
@@ -62,15 +66,17 @@
 - Inkitt는 DISCOVER UX의 구조적 참조이다. 공개 이야기 탐색·topic/category·reader reaction·성장 구조를 참고하되 높은 정보 밀도나 SNS 분위기를 복사하지 않는다. 시각적 톤은 Cosmos의 여백과 단순함을 유지한다.
 
 ## First Experience와 Creation Type
-- First Experience는 기능 설명보다 첫 30초에 호기심과 창작 가능성을 느끼게 하는 경험이다: “어? 여기 뭐지?” → “내 생각을 여기서 한번 만들어볼 수 있겠는데?”
+- First Experience는 기능 설명보다 첫 30초에 호기심과 창작 가능성을 느끼게 하는 경험이다: “어? 여기 뭐지?” → “내 생각을 여기서 한번 만들어볼 수 있겠는데?” 회원가입은 서비스 등록보다 내 이야기를 저장하고 계속 만드는 행동으로 느껴져야 한다.
 - profiles.interest_codes와 projects.initial_interest_codes는 raw First Experience context로 유지한다.
 - filmScreenplay / novel / webNovel / essay는 작품 형식 후보이고, everydayStory는 소재·방향, empathyComfort는 의도·감정, idea는 탐색 단계, unsure는 미결정 상태이다.
 - raw interest를 projects.creation_type으로 자동 변환하거나 자동 저장하지 않는다. Creation Type은 사용자가 명시적으로 확정한 작품 형식이다.
 - 현재 Creation Type 후보는 SCREENPLAY / NOVEL / WEB_NOVEL / ESSAY이다. NULL은 아직 형식을 정하지 않은 정상 상태이다.
+- Creation Type은 단순 표시 category가 아니라 향후 Writing Template → Workspace Structure → Writing Guide → AI Partner Rules → Publish Structure의 기준이다. 현재 projects.creation_type 기반을 유지하고, 미확정 taxonomy table이나 형식별 전체 화면 복제는 만들지 않는다.
+- 장기적으로 공통 구조 70–80%와 형식별 구조 20–30%를 지향하되 고정 구현 비율로 삼지 않는다. 모든 형식에 공통이면 공통 Domain / Component를 우선하고, 해당 형식의 본질적인 차이일 때만 전용 동작을 도입한다.
 - 창작은 질문 → 생각 → 발견 → 구조로 발전시킨다. 로그라인·시놉시스·플롯·인물 변화·장면 같은 전문 지식이나 입력폼을 처음부터 요구하지 않는다. 전문 구조는 실제 도움이 될 때 도입하고, 양식과 빈칸으로 작성 압박을 만들지 않는다.
 
 ## CREATE / DISCOVER와 현재 도메인
-- CREATE는 private creation workspace, DISCOVER는 public work discovery이다. 창작자의 집중 공간과 공개 작품을 발견·읽는 공간을 섞지 않는다.
+- CREATE는 private creation workspace, DISCOVER는 public work discovery이다. 창작자의 집중 공간과 공개 작품을 발견·읽는 공간을 섞지 않는다. 두 영역은 같은 ZAGGAS 디자인 언어를 공유한다. CREATE에서는 주변이 조용해지고 자신의 작업 공간에 들어가는 느낌을 지키며 순위·인기·알림·공개 경쟁을 계속 노출하지 않는다.
 - Project는 private creator work unit, 현재 Story는 private manuscript이다.
 - Project.title은 현재 작품 제목의 source of truth이다. NULL은 제목 미정이고, 기존 “첫 이야기” 문자열은 실제 제목으로 취급한다.
 - Story는 이야기 개요·방향·premise·향후 public work와 구분한다.
@@ -81,7 +87,10 @@
 ## AI Partner와 향후 Workspace
 - 이야기의 주인은 항상 사용자이다. AI는 창작자를 대체하지 않으며 Partner / Editor / Assistant / Guide로 질문·생각 정리·창작 방법 설명·막혔을 때 방향 제안을 돕는다. 작품 전체 자동 생성을 기본 경험으로 만들지 않는다.
 - AI Partner는 Creation Workspace 안에서 필요한 순간에 나타난다. 별도 중심 화면, 항상 화면의 30~40%를 차지하는 chat panel, ChatGPT clone을 기본값으로 만들지 않는다.
-- 향후 질문 → 사용자 답변 → AI 구조화 → 창작 요소 반영 흐름을 지향한다.
+- 향후 대화 → 생각 → 구조화 제안 → 사용자 검토 → 적용 → Domain Data 변경 흐름을 지향한다. 최종 결정권은 사용자에게 있으며 AI가 창작 데이터를 조용히 변경하지 않는다.
+- AI Partner는 일관된 이름·아이콘·호출 방식·상호작용 모델을 유지한다. 막혔을 때 필요한 순간에 호출하는 경험을 지향한다.
+- AI context는 Project / Creation Type / Story / Character / Chapter·Scene / 현재 작업 등 명시적인 domain data로 구성하고 렌더링된 UI 문구를 수집해 만들지 않는다. 향후 ZAGGAS Domain → AI Partner Service → AI Provider Adapter → External AI API 경계를 유지해 Application Core가 특정 provider에 직접 종속되지 않도록 한다. provider 계층은 필요해질 때 구현한다.
+- 장기 CREATE 모델은 Global Header → Project Header → Project Navigation + Main Creation Area → 필요할 때 AI Partner이다. 왼쪽 작업 구조·가운데 현재 창작이라는 방향만으로 상시 sidebar를 구현하지 않는다. 현재 원고 / 이야기의 방향이 최소 실제 Project Navigation이며 실제 기능이 있을 때만 탐색 도구를 추가한다.
 - Creation Type별 Workspace 방향은 다음과 같다. 이는 현재 구현 목록이 아니라 architecture direction이다.
   - SCREENPLAY: Story / Characters / Timeline / Scenes / Script.
   - NOVEL: Story / Characters / World / Outline / Chapters / Manuscript.
@@ -94,6 +103,7 @@
 - READ는 시스템이 meaningful reading을 감지하는 신호이며 사용자 버튼으로 만들지 않는다. 정확한 threshold는 Public 단계에서 결정한다. 현재 READ DB를 만들지 않는다.
 - EMPATHY는 사용자가 명시적으로 표현하는 신호이다.
 - WAITING은 creator follow가 아닌 특정 이야기의 다음 이야기를 기다리는 관계이다. 장기적으로 Retention과 IP Potential의 신호가 될 수 있다.
+- Discover를 중독성 feed로 만들지 않으며 순위·조회수·팔로워·인기 경쟁과 banner·category 과밀을 중심에 두지 않는다. 공감했어요 / 계속 보고 싶어요 / 영감을 받았어요 / 함께 만들고 싶어요는 제품 후보이며 확정된 구현 요구사항이 아니다.
 - 이 방향은 현재 Public / Reader / Connect 기능 구현 승인을 의미하지 않는다.
 
 ## 현재 CREATE 경험과 출발점
@@ -127,13 +137,14 @@
 - 방향 답변은 사용자가 작성한 private 창작 맥락이다. AI 입력·출력, 공개 metadata·작품 소개, Character·Scene·Outline으로 자동 전환하지 않는다. 향후 활용은 별도 제품 설계와 명시적 사용자 행동을 거친다. 출발점·방향·향후 기획 메모는 공개하지 않으며 Publish에서 사용자가 공개할 내용을 명시적으로 선택한다.
 
 ## 주요 STEP 전 제품 맥락 동기화
+- 제품 결정의 source of truth는 ZAGGAS Product Spec이다. 개발 중 미해결 제품 결정을 임의로 확정하지 않으며 중요한 새 결정이 필요하면 구현을 멈추고 Product Design 검토로 돌린다.
 - 주요 STEP 전에 최신 승인된 기획·사업계획·UX·제품 결정을 AGENTS.md와 비교한다. 철학·흐름·화면·사용성·차별성·향후 구조에 영향을 주는 지속 원칙이 누락되거나 오래됐으면 승인된 문서 수정 범위에서 먼저 갱신한다. 문서 수정 승인이 없다면 차이를 보고하고 승인받는다.
 - 사업계획의 차별성은 실제 제품 행동으로 증명한다. 아직 사용자 가치가 없는 사업 개념을 UI에 강제로 넣거나 기능 목록을 부풀리지 않는다.
 - 주요 기능은 핵심 경험을 선명하게 하는지, Continuation을 돕는지, 사용자의 이야기 발견·발전을 돕는지, 조기 복잡성을 만드는지, CREATE/DISCOVER 경계를 지키는지, AI·인물·장면·Publish·Discover·Connect·IP 확장을 막지 않는지 점검한다. 좋은 아이디어라도 이르면 보류한다.
 - architecture 결정·DB 변경·application 구현·Git 마무리는 서로 다른 승인 경계를 유지한다. 문서 동기화는 기능 구현이나 migration 적용 승인을 뜻하지 않는다.
 
 ## 개발 절차와 큰 STEP 사전 점검
-- 기존 분석 → 승인 → 구현 → 검증 규칙에 더해, 전체 흐름은 Codex analysis → 사용자/검토자 review → explicit approval → implementation → static validation → runtime E2E → final review → commit/push이다. commit/push는 별도 승인 범위에서만 수행한다.
+- 전체 흐름은 기존 코드 분석 → 현재 구현 이해 → Product Spec 비교 → 영향 분석 → 변경 계획·대상 파일 → 사용자/검토자 review → explicit approval → implementation → build/test → browser verification → final review → commit/push이다. commit/push는 별도 승인 범위에서만 수행한다.
 - 구현 승인 전 DB migration을 적용하지 않는다. migration 실제 적용은 별도 승인 대상이다.
 - 미래에 필요할 것 같다는 이유로 요청 범위를 확대하지 않는다. AI APIs/UI, Publication, Discover, Connect, Reader signals, Admin CMS, advanced structured editor, future workspace tables는 별도 승인 없이 추가하지 않는다.
 - 큰 STEP에서 코딩 전에 아래를 점검하고 충돌 가능성이 있으면 구현 전에 보고한다.
@@ -151,8 +162,16 @@
 - 회귀 보호 대상: First Experience → Project → Workspace → manuscript → title decision → atomic first save → My ZAGGAS → continue writing. 제목·형식·원고 저장, 충돌·재시도·미저장 입력 보호도 유지한다.
 - 기술 기반: Next.js / TypeScript / React / Supabase / App Router.
 - DAY04 STEP 5 기준점은 ca6df28e116e58bccf7e5405fd2dc200564f17d8이다. 완료 이력이며 이후 작업의 고정 HEAD 요구값이 아니다. 매번 실제 Git 상태와 해당 요청의 expected HEAD를 확인한다.
-- STEP 5는 완료되었으며 STEP 6 Story Direction 제품 설계와 STEP 6-A DB / Security / Save Contract는 승인되었다. STEP 6-B migration 구현은 아직 시작하지 않았고 Story Direction application 기능도 미구현이다. 상세 SQL·migration 구현과 실제 DB 적용·application 구현은 각각 승인된 작업 범위에서만 진행한다.
+- STEP 5는 완료되었다. Story Direction 저장 migration은 적용·commit되었으며 F1 application과 Visual Grammar v1 구현은 현재 미커밋 검토 상태이다. 현재 우선순위는 Visual Grammar 기반 검토 → Story Direction 최종 F3 UX → CREATE Workspace 발전이다. 문서 동기화는 F3 구현 승인이 아니며 migration·DB·application·Git 작업은 각각 승인 범위에서만 진행한다.
 
+## 확장과 화면 검토 기준
+- DB는 현재 화면만을 기준으로 설계하지 않는다. User / Project / Creation Type / Story / Character / Creation Unit / Publish / Reaction 확장을 열어두되 사용하지 않는 table을 만들거나 미확정 모델의 relational / JSON 저장 방식을 미리 선택하지 않는다. 공통 Domain과 형식별 Domain을 개념적으로 구분한다.
+- 주요 창작 기능은 UX / UI / DATA / AI / PUBLISH를 함께 검토한다. 다섯 층을 동시에 구현하라는 뜻이 아니라 다른 층의 의미와 향후 구조를 막지 않아야 한다는 뜻이다.
+- Architecture는 확장 가능하게, MVP는 작게 유지한다. Timeline / World / Advanced Boards / Analytics / Collaboration / Contest / IP Marketplace / BGM은 별도 승인 전 보류한다. BGM을 나중에 도입해도 기본은 Quiet이며 자동 재생 없이 사용자가 명시적으로 켜도록 한다.
+- 모바일 우선 web으로 개발하고 desktop과 mobile은 같은 mental model과 제품 동작을 유지한다. Unicode / locale / timezone / translation / global OAuth / 원문 언어 확장을 고려하되 전체 localization을 지금 구현하지 않는다.
+- Product Spec과 현재 구현의 차이는 KEEP / REFINE / RESTRUCTURE / REMOVE / LATER로 분류한다. Spec이 넓어졌다는 이유만으로 작동하는 구현을 삭제하거나 다시 만들지 않는다.
+- 의미 있는 UI 구현 후 같은 ZAGGAS 제품으로 보이는지, 목적이 바로 이해되는지, Primary Action이 하나로 분명한지, 설명 없이 쓸 수 있는지, Button / Link / Input 역할이 명확한지, 간격·정렬이 공유 규칙을 따르는지, 불필요한 UI가 공간을 차지하는지, content가 UI 장식보다 먼저 보이는지, AI가 지원 역할인지, mobile이 같은 mental model을 유지하는지 확인한다. 명확한 불일치는 검토 대상으로 보고한다.
+- 장기 발전 순서는 Foundation → First Experience → Project / CREATE Workspace → 형식별 경험 → AI Partner → Publish → Discover → Connect이다. 이미 완료된 기반은 실제 충돌이 발견된 경우에만 변경한다.
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

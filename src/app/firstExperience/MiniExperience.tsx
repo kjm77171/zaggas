@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import styles from "./firstExperience.module.css";
+import PrimaryTextCta from "@/components/PrimaryTextCta";
 
 export default function MiniExperience({ sentence, onChange, onContinue }: { sentence: string; onChange: (value: string) => void; onContinue: () => void }) {
   const [error, setError] = useState("");
@@ -23,7 +24,7 @@ export default function MiniExperience({ sentence, onChange, onContinue }: { sen
       <textarea ref={inputRef} id="experienceSentence" value={sentence} onChange={(event) => { onChange(event.target.value); setError(""); }} rows={4} maxLength={500} required aria-invalid={Boolean(error)} aria-describedby={`sentenceCount sentenceNote${error ? " sentenceError" : ""}`} placeholder="어느 날, 문득 떠오른 이야기…" />
       <div className={styles.inputMeta}><span id="sentenceNote">이 문장은 이 탭에서 잠시 이어갈 수 있어요.</span><span id="sentenceCount">{count} / 500</span></div>
       {error && <p id="sentenceError" role="alert" className={styles.error}>{error}</p>}
-      <button type="submit" className={styles.primary}>내 문장 살펴보기 <span aria-hidden="true">→</span></button>
+      <PrimaryTextCta type="submit" className={styles.primary}>내 문장 살펴보기</PrimaryTextCta>
     </form>
   );
 }

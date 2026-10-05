@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PrimaryTextCta from "@/components/PrimaryTextCta";
 import { createSupabaseSessionClient } from "@/lib/supabase/session";
 import { getSupabaseAuthConfig } from "@/lib/supabase/config";
 import { getProjects, type Project } from "@/lib/projects";
@@ -16,7 +17,7 @@ export default async function MyPage() {
   const projects = userId ? await getProjects(client, userId) : [];
   const summaries = userId ? await getProjectStorySummaries(client, userId, projects.map((project) => project.id)) : new Map<string, { count: number; updatedAt: string }>();
   const { hero, others, review } = getContinuationProjects(projects, summaries);
-  function projectDetails(project: Project) {
+  function projectDetails(project: Project, primary = false) {
     const summary = summaries.get(project.id);
     const saved = summary?.count === 1;
     const date = saved ? summary.updatedAt : project.created_at;
@@ -24,7 +25,7 @@ export default async function MyPage() {
       <p className={styles.meta}>{getCreationTypeLabel(project.creation_type)}</p>
       {project.seed_sentence && <p className={styles.seed}>{project.seed_sentence}</p>}
       <p className={styles.meta}>{saved ? "원고 저장" : "시작"} <time dateTime={date}>{formatProjectDate(date)}</time></p>
-      <Link href={`/projects/${project.id}`} className={styles.continueLink}>{saved ? "이어 쓰기" : "글쓰기 시작"} →</Link>
+      <>{primary ? <PrimaryTextCta href={`/projects/${project.id}`}>{saved ? "이어 쓰기" : "글쓰기 시작"}</PrimaryTextCta> : <Link href={`/projects/${project.id}`} className="zSecondaryLink">{saved ? "이어 쓰기" : "글쓰기 시작"} →</Link>}</>
     </>;
   }
   return <AppShell><main className={styles.page}><h1>My ZAGGAS</h1>
@@ -34,7 +35,7 @@ export default async function MyPage() {
         {hero && <section className={styles.hero} aria-labelledby="continueTitle">
           <p className={styles.eyebrow}>{summaries.get(hero.id)?.count === 1 ? "최근 저장한 이야기" : "시작한 이야기"}</p>
           <h2 id="continueTitle"><Link href={`/projects/${hero.id}`}>{getProjectTitle(hero.title)}</Link></h2>
-          {projectDetails(hero)}
+          {projectDetails(hero, true)}
         </section>}
         {others.length > 0 && <section aria-labelledby="otherStories"><h2 id="otherStories" className={styles.sectionTitle}>다른 이야기</h2><ul className={styles.list}>{others.map(project => <li key={project.id}>
           <h3><Link href={`/projects/${project.id}`}>{getProjectTitle(project.title)}</Link></h3>{projectDetails(project)}

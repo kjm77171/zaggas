@@ -5,6 +5,7 @@ import StartStoryButton from "./StartStoryButton";
 import MiniExperience from "./MiniExperience";
 import { interests } from "./interests";
 import styles from "./firstExperience.module.css";
+import PrimaryTextCta from "@/components/PrimaryTextCta";
 
 import KakaoStartButton from "@/app/auth/KakaoStartButton";
 import { restoreState, saveState, type ExperienceState, type ExperienceStep } from "./draft";
@@ -66,15 +67,15 @@ function Experience({ isAuthenticated }: { isAuthenticated: boolean }) {
         {startError && <p role="alert" className={styles.error}>{startError}</p>}
         <div key={step} className={styles.step}>
           <h1 id="experienceTitle" ref={headingRef} tabIndex={-1} className={styles.title}>{titles[step]}</h1>
-          {step === "landing" && <><p className={styles.description}>아직 이야기가 아니어도 괜찮아요.<br />장면 하나, 생각 하나에서 시작해도 됩니다.</p><button className={styles.primary} onClick={startExperience}>시작해볼까요? <span aria-hidden="true">→</span></button></>}
+          {step === "landing" && <><p className={styles.description}>아직 이야기가 아니어도 괜찮아요.<br />장면 하나, 생각 하나에서 시작해도 됩니다.</p><PrimaryTextCta className={styles.primary} onClick={startExperience}>시작해볼까요?</PrimaryTextCta></>}
           {step === "interest" && <>
             <fieldset className={styles.interests}><legend>마음이 가는 이야기를 골라주세요. 여러 개도 좋아요.</legend><div className={styles.options}>{interests.map((interest) => <label key={interest.id} className={styles.option}><input type="checkbox" checked={selectedInterestIds.includes(interest.id)} onChange={() => toggleInterest(interest.id)} /><span>{interest.label}</span></label>)}</div></fieldset>
-            <button className={styles.primary} disabled={!selectedInterestIds.length} onClick={() => goTo("possibility")}>계속해볼까요? <span aria-hidden="true">→</span></button>
+            <PrimaryTextCta className={styles.primary} disabled={!selectedInterestIds.length} onClick={() => goTo("possibility")}>계속해볼까요?</PrimaryTextCta>
           </>}
           {step === "possibility" && <>
             <p className={styles.description}>{selectedInterestIds.includes("unsure") ? "어떤 이야기인지 아직 몰라도 괜찮아요." : selectedInterestIds.length === 1 ? `${interests.find((interest) => interest.id === selectedInterestIds[0])?.label}, 처음이어도 괜찮아요.` : "여러 마음이 만나 하나의 이야기가 될 수도 있어요."}<br />완성된 줄거리보다 작은 생각 하나면 충분해요.</p>
             <p className={styles.philosophy}>당신의 이야기를 대신 쓰지 않습니다.<br />당신이 끝까지 써낼 수 있도록 함께합니다.</p><p className={styles.ownership}>이야기는 당신의 것입니다.</p>
-            <button className={styles.primary} onClick={() => goTo("mini")}>한 문장으로 시작하기 <span aria-hidden="true">→</span></button>
+            <PrimaryTextCta className={styles.primary} onClick={() => goTo("mini")}>한 문장으로 시작하기</PrimaryTextCta>
           </>}
           {step === "mini" && <MiniExperience sentence={sentence} onChange={(value) => setState((current) => ({ ...current, sentence: value }))} onContinue={() => goTo("conversion")} />}
           {step === "conversion" && <>

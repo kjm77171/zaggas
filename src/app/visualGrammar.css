@@ -1,0 +1,34 @@
+:root {
+  --z-background: #f8f7f3; --z-surface: #fffdf8;
+  --z-text: #282724; --z-secondary: #66635c; --z-muted: #77736a;
+  --z-border: #ddd8cd; --z-input-border: #d4cfc2; --z-focus: #716345; --z-error: #a32121;
+  --z-font: Arial, "Malgun Gothic", sans-serif;
+  --z-display: clamp(32px, 4.8vw, 48px); --z-title: clamp(24px, 3vw, 32px);
+  --z-space-1: 4px; --z-space-2: 8px; --z-space-3: 12px; --z-space-4: 16px;
+  --z-space-6: 24px; --z-space-8: 32px; --z-space-12: 48px; --z-space-16: 64px;
+  --z-reading-width: 640px; --z-writing-width: 800px; --z-header-height: 100px;
+}
+.zDisplay { font-size: var(--z-display); font-weight: 500; line-height: 1.4; letter-spacing: -.045em; }
+.zPageTitle { font-size: var(--z-title); font-weight: 500; line-height: 1.4; margin: var(--z-space-6) 0 var(--z-space-2); overflow-wrap: anywhere; }
+.zSectionTitle { font-size: 20px; font-weight: 500; line-height: 1.5; margin: var(--z-space-6) 0 var(--z-space-4); }
+.zBodySmall { font-size: 14px; line-height: 1.7; }
+.zHelper { font-size: 13px; line-height: 1.7; color: var(--z-muted); }
+.zBackLink, .zSecondaryLink { display: inline-block; font-size: 14px; font-weight: 400; line-height: 1.6; color: var(--z-secondary); text-decoration: none; padding: 10px 0; }
+.zBackLink:hover, .zSecondaryLink:hover { text-decoration: underline; text-underline-offset: 4px; }
+.zFieldLabel { display: block; font-size: 14px; font-weight: 500; line-height: 1.6; margin-bottom: var(--z-space-3); }
+.zInput { font-family: var(--z-font); font-size: 16px; line-height: 1.8; color: var(--z-text); background: var(--z-surface); border: 1px solid var(--z-input-border); border-radius: 2px; padding: var(--z-space-4); width: 100%; resize: vertical; }
+.zDirectionForm { max-width: var(--z-reading-width); margin: var(--z-space-6) 0 var(--z-space-3); }
+.zDirectionForm textarea { display: block; margin: var(--z-space-3) 0 var(--z-space-4); }
+.zReview { max-width: var(--z-reading-width); margin: var(--z-space-8) 0; }
+.zAnswer { white-space: pre-wrap; overflow-wrap: anywhere; }
+.zQuietAction.zQuietAction { font-size: 14px; font-weight: 400; line-height: 1.6; background: transparent; color: var(--z-secondary); border: 0; border-radius: 0; padding: 10px 4px; min-height: 44px; }
+.zQuietAction:hover { text-decoration: underline; text-underline-offset: 4px; }
+.zPrimaryCta.zPrimaryCta { display: inline-flex; align-items: center; gap: 20px; min-height: 48px; width: fit-content; padding: 10px 0; border: 0; border-bottom: 1px solid currentColor; border-radius: 0; background: transparent; color: var(--z-text); font-family: var(--z-font); font-size: 16px; font-weight: 600; line-height: 1.6; text-align: left; text-decoration: none; cursor: pointer; }
+.zPrimaryCta:hover { opacity: .7; }
+.zPrimaryCta:disabled { opacity: .35; cursor: default; }
+.zWorkspaceNav { display: flex; flex-wrap: wrap; gap: 24px; margin: var(--z-space-4) 0 var(--z-space-6); }
+.zWorkspaceNav a, .zWorkspaceNav span { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 0; font-size: 14px; font-weight: 400; line-height: 1.6; color: var(--z-secondary); text-decoration: none; border-bottom: 1px solid transparent; }
+.zWorkspaceNav [aria-current="page"] { font-weight: 600; color: var(--z-text); border-bottom-color: currentColor; }
+.zWorkspaceNav a:hover { color: var(--z-text); }
+.zPrimaryCta:focus-visible, .zWorkspaceNav a:focus-visible, .zInput:focus-visible, .zQuietAction:focus-visible, .zBackLink:focus-visible, .zSecondaryLink:focus-visible { outline: 2px solid var(--z-focus); outline-offset: 4px; }
+@media (max-width: 600px) { :root { --z-header-height: 80px; } .zInput { padding: var(--z-space-3); } }

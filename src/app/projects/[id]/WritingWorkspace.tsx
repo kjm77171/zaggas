@@ -1,15 +1,16 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, useState, startTransition, type ReactNode } from "react";
+import { useEffect, useRef, useState, startTransition } from "react";
 import { createManuscriptAction, createTitledManuscriptAction, renameProjectAction, saveManuscriptAction, updateCreationTypeAction } from "./actions";
 import { validateContent, validateTitle, type ManuscriptLoad, type SaveState, type ProjectTitleData } from "./workspaceTypes";
 import { creationTypes, type CreationType } from "@/lib/creationTypes";
 import { getCreationTypeLabel, getProjectTitle } from "@/lib/projectPresentation";
 import styles from "./workspace.module.css";
 type FirstRequest = { storyId: string; content: string; title: string | null; expectedProjectUpdatedAt: string };
-export default function WritingWorkspace({ projectId, initial, initialProject, initialCreationType, children }: {
-  projectId: string; initial: ManuscriptLoad; initialProject: ProjectTitleData; initialCreationType: CreationType | null; children: ReactNode;
+export default function WritingWorkspace({ projectId, initial, initialProject, initialCreationType, seedSentence }: {
+  projectId: string; initial: ManuscriptLoad; initialProject: ProjectTitleData; initialCreationType: CreationType | null; seedSentence: string | null;
 }) {
+  const [originOpen, setOriginOpen] = useState(initial.kind === "empty");
   const [project, setProject] = useState(initialProject);
   const [creationType, setCreationType] = useState(initialCreationType);
   const [typeDraft, setTypeDraft] = useState(initialCreationType);
@@ -154,9 +155,15 @@ export default function WritingWorkspace({ projectId, initial, initialProject, i
   return <>
     <Link href="/my" className={styles.back} onClick={(event) => { if (unsaved && !window.confirm("아직 저장을 확인하지 못한 내용이 있습니다. 이동할까요?")) event.preventDefault(); }}>← My ZAGGAS</Link>
     <header className={styles.titleArea}>
+      <div className={styles.projectContext}>
+      <h1>{getProjectTitle(project.title)}</h1>
+      <div className={styles.contextActions}>
+      {!blocked && !titleEditing && !titlePanel && (project.title !== null || manuscript) && <button type="button" disabled={busy || hasRetry || typePanel} onClick={() => { setTitleEditing(true); setTitleMessage(""); }}>제목 변경</button>}
       <button ref={typeButtonRef} type="button" className={styles.typeButton} disabled={blocked || busy || hasRetry || titleEditing || titlePanel} aria-expanded={typePanel} aria-controls="creationTypePanel" onClick={() => { setTypePanel(true); setTypeMessage(""); }}>
         {creationType === null ? "작품 형식 정하기" : `${getCreationTypeLabel(creationType)} · 변경`}
       </button>
+      </div>
+      </div>
       {typePanel && <section id="creationTypePanel" className={styles.typePanel} aria-labelledby="creationTypeQuestion">
         <h2 id="creationTypeQuestion" ref={typeHeadingRef} tabIndex={-1}>이 이야기를 어떤 모습으로 만들어볼까요?</h2>
         <p className={styles.note}>지금 정하지 않아도 계속 쓸 수 있어요.</p>
@@ -174,14 +181,17 @@ export default function WritingWorkspace({ projectId, initial, initialProject, i
       </section>}
       <p role="status" aria-live="polite" className={styles.note}>{typeState === "saving" ? "형식을 저장하고 있어요…" : typeMessage}</p>
       {(typeState === "conflict" || typeState === "error") && <button type="button" disabled={busy} onClick={reload}>최신 정보 다시 불러오기</button>}
-      <h1>{getProjectTitle(project.title)}</h1>
-      {!blocked && !titleEditing && !titlePanel && (project.title !== null || manuscript) && <button type="button" disabled={busy || hasRetry || typePanel} onClick={() => { setTitleEditing(true); setTitleMessage(""); }}>제목 변경</button>}
       {titleEditing && !titlePanel && <form className={styles.titleForm} onSubmit={(event) => { event.preventDefault(); void renameTitle(); }}>
         {titleInput}
         <div className={styles.recovery}><button type="submit" disabled={busy || hasRetry || !titleDirty || titleState === "conflict"}>제목 저장</button><button type="button" disabled={busy} onClick={cancelTitle}>취소</button></div>
       </form>}
     </header>
-    {children}
+    {seedSentence?.trim() && <section className={styles.origin}>
+      <button type="button" className={styles.originToggle} aria-expanded={originOpen} aria-controls="storyOrigin" onClick={() => setOriginOpen(open => !open)}>
+        <span>이야기의 출발점</span><span>{originOpen ? "접기" : "펼치기"}</span>
+      </button>
+      <p id="storyOrigin" hidden={!originOpen}>{seedSentence}</p>
+    </section>}
     {blocked && <p role="alert">이 작업에 여러 원고가 연결되어 있어 확인이 필요합니다. 원고를 임의로 선택하지 않았습니다.</p>}
     <form onSubmit={(event) => { event.preventDefault(); void save(); }} className={styles.editorForm}>
       <label htmlFor="manuscript">원고</label>

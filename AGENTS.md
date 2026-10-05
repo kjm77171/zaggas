@@ -41,10 +41,11 @@
 - 다음 단계 후보는 제안만 하고 임의 진행하지 않는다.
 
 ## 언어와 보고서
-- 사용자 대상 보고서·분석 문서·계획서·작업 결과는 기본적으로 자연스러운 한국어로 작성한다.
-- 불필요한 일본어, 일본식 한자, 중국어 간체·번체, 한국에서 일반적으로 쓰지 않는 한자 표현을 섞지 않는다.
-- Next.js, Supabase, PostgreSQL, RLS, RPC, Workspace, Project, Story, Creation Type, Runtime E2E, Git 등 기술 용어·고유명사는 영어를 사용할 수 있다. 기술 용어를 억지로 한글화하지 않는다.
+- 모든 Codex 보고서와 프로젝트 문서의 기본 서술 언어는 자연스러운 한국어이다.
+- 일반 한국어 문장에 일본어 문장·조사·활용·일본식 보고서 문체를 섞지 않는다. 자연스러운 한국어 표현이 있는 곳에 불필요한 일본어·중국어·한자 표현을 사용하지 않는다.
+- Next.js, Supabase, PostgreSQL, RLS, RPC, Workspace, Project, Story, Creation Type, Runtime E2E, Git 등 기술 용어·고유명사, 코드·SQL 식별자, framework/library/product 이름과 표준 개발 약어는 영어를 사용할 수 있다. 기술 용어를 억지로 한글화하지 않는다.
 - 쉬운 한국어를 사용하고 번역투·학술 문장·한자어 남용을 피한다. 결론 → 이유 → 영향 → 다음 행동 순서로 설명한다. PASS / FAIL / STOP 표기는 유지할 수 있다.
+- 주요 보고서·문서를 제출하기 전에 언어를 자체 점검한다. 의도하지 않은 일본어가 섞였으면 완료로 처리하지 않고 한국어로 바로잡은 뒤 제출한다.
 
 ## 제품 가치와 Continuation
 - 핵심 가치: CREATE / CONNECT / MAKE IT POSSIBLE / GROW. Brand: Be real. Be human. Product philosophy: Simple outside. Deep inside.
@@ -112,10 +113,18 @@
   4. 이 글을 읽고 어떤 느낌이나 생각이 남았으면 하나요?
 - 한 화면에서 한 질문과 생각에 집중한다. 질문 → 사용자 답변 → 저장하고 다음 흐름을 기본으로 검토하며 건너뛰기·부분 응답·나중에 이어가기를 허용한다. 완료율·필수 표시·달성 배지·설정 완료 압박을 만들지 않는다.
 - 초기 결과는 사용자 원문을 ‘지금 마음이 가는 것 / 아직 궁금한 것 / 마음에 남는 이유 / 남기고 싶은 느낌’으로 정돈해 표시한다. 답한 항목만 보여도 유용하며 개별 수정이 가능해야 한다. 실제 AI 기능 없이 해석이나 요약을 생성하지 않는다.
-- 방향은 Project·Story timestamp와 분리된 private 저장 도메인을 지향한다. Project 0..1 방향은 현재 후보이며 상세 schema·DB/RLS·저장·동시성 계약은 아직 승인되지 않았다. STEP 6-A 검토 전 특정 테이블·migration·RPC를 확정하거나 생성하지 않는다.
+- Project에는 하나의 논리적인 ‘이야기의 방향’ 맥락이 있다. 승인된 물리 저장 모델은 project_story_direction_answers의 Project × question_key별 답변 행이며 기본 식별자는 (project_id, question_key)이다. 네 답변 컬럼을 가진 단일 행이나 별도 부모 행을 만들지 않는다.
+- 안정적인 내부 질문 key는 focus / exploration / meaning / after_feeling이다. 한국어 표시 문구는 별도로 개선할 수 있으며 DB/API 식별자로 사용하지 않는다. 각 답변의 question_set_version은 질문의 의미를 나타낸다. 표현·안내만 바뀌면 유지할 수 있고 의미가 바뀌면 버전을 검토한다. 범용 설문 엔진을 만들지 않는다.
+- 한 저장 요청은 정확히 한 답변만 변경한다. 한 답변 수정 때문에 전체 답변을 전송하거나 갱신하지 않는다. 각 답변 행의 integer revision으로 동시성을 관리한다. 서로 다른 질문은 독립적으로 저장할 수 있고 같은 질문의 오래된 수정은 충돌로 처리한다. projects.updated_at이나 stories.updated_at을 방향의 동시성 기준으로 사용하지 않는다.
+- 실제 저장 요청은 안정적인 request ID를 사용하고 last_request_id를 보존한다. 응답을 받지 못한 재시도는 원래 Project·질문 key·답변·질문 버전·expected revision·request ID를 그대로 사용한다. 재시도가 두 번째 변경을 만들거나 최신 답변을 덮어쓰면 안 된다. 전체 요청 이력 원장은 현재 만들지 않는다.
+- 현재 revision에서 저장된 값과 같은 값을 저장하면 no-op으로 처리하며 revision·updated_at·창작 활동을 변경하지 않는다. 기존 답변 비우기는 answer = NULL로 저장하고 행을 삭제하지 않아 revision 상태를 유지한다. 한 번도 저장하지 않은 미응답 질문은 행이 없어도 된다.
+- 답변 저장 한도는 2,000 Unicode code points이다. 이는 저장 용량이며 UI는 짧은 생각 쓰기를 돕는다. 줄바꿈·emoji·일반 Unicode를 허용하고 공백만 있는 입력은 NULL로 처리한다. 불필요한 정규화 없이 사용자 원문을 보존하며 DB/RPC 경계에서 최종 검증한다.
+- 조회는 Project 소유자 RLS 아래 직접 SELECT, 변경은 전용 저장 RPC를 사용한다. RPC 후보는 zaggas_save_story_direction_answer이며 authenticated의 직접 INSERT/UPDATE/DELETE를 일반 저장 경로로 허용하지 않는다. RPC는 auth.uid()로 사용자를 식별하고 Project 소유권·질문 key 허용 목록·revision을 검증하며 최초 저장 경쟁·응답 유실 재시도·최신 데이터 보호를 처리한다.
+- 방향은 authenticated 소유자만 사용하는 private 맥락이다. anon의 읽기·쓰기를 허용하지 않으며 사용자 입력 owner ID를 신뢰하지 않는다. SECURITY DEFINER는 기존 보안 규칙, 명시적으로 안전한 search_path와 최소 권한을 따른다. service_role의 구체적인 GRANT/REVOKE는 여기서 고정하지 않고 STEP 6-B에서 기존 ZAGGAS/Supabase 권한 관례와 비교하여 결정한다.
+- 방향 저장은 projects.updated_at과 stories.updated_at을 변경하지 않는다. /my Hero·Continuation·이어 쓰기 우선순위에 영향을 주거나 이를 위해 Project/Story 시각을 갱신하는 trigger를 추가하지 않는다.
 - 방향 답변으로 Creation Type을 자동 결정하거나 인물·장면·구성·세계·공개 metadata를 자동 생성하지 않는다. 향후 구조화는 명시적 사용자 행동을 거친다.
 - 향후 AI는 사용자 답변을 듣고 후속 질문·정리·명료화·연결 발견을 돕는다. 사용자 원문과 AI 제안은 구분하며 사용자 의도·답변을 조용히 교체하거나 정답 구조를 선언하지 않는다.
-- 출발점·방향·향후 기획 메모는 공개하지 않는다. Publish에서 사용자가 공개할 내용을 명시적으로 선택한다.
+- 방향 답변은 사용자가 작성한 private 창작 맥락이다. AI 입력·출력, 공개 metadata·작품 소개, Character·Scene·Outline으로 자동 전환하지 않는다. 향후 활용은 별도 제품 설계와 명시적 사용자 행동을 거친다. 출발점·방향·향후 기획 메모는 공개하지 않으며 Publish에서 사용자가 공개할 내용을 명시적으로 선택한다.
 
 ## 주요 STEP 전 제품 맥락 동기화
 - 주요 STEP 전에 최신 승인된 기획·사업계획·UX·제품 결정을 AGENTS.md와 비교한다. 철학·흐름·화면·사용성·차별성·향후 구조에 영향을 주는 지속 원칙이 누락되거나 오래됐으면 승인된 문서 수정 범위에서 먼저 갱신한다. 문서 수정 승인이 없다면 차이를 보고하고 승인받는다.
@@ -142,7 +151,7 @@
 - 회귀 보호 대상: First Experience → Project → Workspace → manuscript → title decision → atomic first save → My ZAGGAS → continue writing. 제목·형식·원고 저장, 충돌·재시도·미저장 입력 보호도 유지한다.
 - 기술 기반: Next.js / TypeScript / React / Supabase / App Router.
 - DAY04 STEP 5 기준점은 ca6df28e116e58bccf7e5405fd2dc200564f17d8이다. 완료 이력이며 이후 작업의 고정 HEAD 요구값이 아니다. 매번 실제 Git 상태와 해당 요청의 expected HEAD를 확인한다.
-- 다음 기능은 STEP 6 Story Direction이다. 먼저 STEP 6-A DB / Security / Save Contract를 별도로 설계·검토·승인받는다. 그 전 migration이나 application 기능을 구현하지 않는다.
+- STEP 5는 완료되었으며 STEP 6 Story Direction 제품 설계와 STEP 6-A DB / Security / Save Contract는 승인되었다. STEP 6-B migration 구현은 아직 시작하지 않았고 Story Direction application 기능도 미구현이다. 상세 SQL·migration 구현과 실제 DB 적용·application 구현은 각각 승인된 작업 범위에서만 진행한다.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

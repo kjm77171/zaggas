@@ -1,0 +1,19 @@
+.thought, .review { max-width: var(--z-reading-width); min-width: 0; margin-top: var(--z-space-8); }
+.position { margin: 0 0 var(--z-space-3); }
+.question { margin: 0 0 var(--z-space-3); overflow-wrap: anywhere; }
+.question label { cursor: text; }
+.origin { margin: var(--z-space-3) 0; }
+.origin summary { width: fit-content; cursor: pointer; }
+.origin p { margin: var(--z-space-2) 0 var(--z-space-4); }
+.writingArea { display: block; height: 200px; min-height: 200px; resize: none; margin: var(--z-space-6) 0; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--z-space-6); row-gap: var(--z-space-2); }
+.answer { margin: var(--z-space-8) 0 var(--z-space-12); }
+.answer h3 { margin: 0 0 var(--z-space-2); }
+.answer p { margin: 0; }
+.conflict { margin-top: var(--z-space-6); overflow-wrap: anywhere; }
+.status { max-width: var(--z-reading-width); margin-top: var(--z-space-4); overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .thought, .review { margin-top: var(--z-space-6); }
+  .actions { align-items: flex-start; }
+  .writingArea { margin: var(--z-space-4) 0; }
+}

@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import WorkspaceNavigation from "@/components/WorkspaceNavigation";
 import { useEffect, useRef, useState, startTransition } from "react";
 import { createManuscriptAction, createTitledManuscriptAction, renameProjectAction, saveManuscriptAction, updateCreationTypeAction } from "./actions";
 import { validateContent, validateTitle, type ManuscriptLoad, type SaveState, type ProjectTitleData } from "./workspaceTypes";
@@ -186,6 +187,7 @@ export default function WritingWorkspace({ projectId, initial, initialProject, i
         <div className={styles.recovery}><button type="submit" disabled={busy || hasRetry || !titleDirty || titleState === "conflict"}>제목 저장</button><button type="button" disabled={busy} onClick={cancelTitle}>취소</button></div>
       </form>}
     </header>
+    <WorkspaceNavigation projectId={projectId} active="manuscript" onNavigate={event => { if (unsaved && !window.confirm("아직 저장을 확인하지 못한 내용이 있습니다. 이동할까요?")) event.preventDefault(); }} />
     {seedSentence?.trim() && <section className={styles.origin}>
       <button type="button" className={styles.originToggle} aria-expanded={originOpen} aria-controls="storyOrigin" onClick={() => setOriginOpen(open => !open)}>
         <span>이야기의 출발점</span><span>{originOpen ? "접기" : "펼치기"}</span>
